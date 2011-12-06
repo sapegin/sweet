@@ -2,7 +2,7 @@
  * Sweet
  * Simplest Web Engine Ever, The
  *
- * @version 0.1
+ * @version 0.3
  * @requires Node.js, Fest
  * @author Artem Sapegin
  * @copyright 2011 Artem Sapegin (sapegin.ru)
@@ -12,8 +12,6 @@
 /*
 @todo
 + Поиск новых документов
-* Сохранение таймстемпа шаблонов
-- Зависимости файлов контента
 + Контент в JSON
 + JSON со свойствами всех файлов контента
 + Сохранение его в файл
@@ -22,35 +20,32 @@
 + Мультиязычность блеать
 * Подумать, как это скрестить с минификатором/склейщиком js/css
 + Общие данные
-- Вынести настройки в отдельный файл
-- Изменения в общих файлах
++ Вынести настройки в отдельный файл
++ Выкинуть все проверки на изменения
+- Слежение за внешними файлами (js, css)
++ Предварительная компиляция шаблонов
+- Вырезать class=""
+- Типографика
+- Нормальная проверка JSON на ошибки с указанием строки
++ Заменить кривые функции на http://nodejs.org/docs/v0.6.1/api/path.html
 */
 
-
-
-/**
- * Settings
- */
-var CONTENT_DIR = 'content/',
-	PUBLISH_DIR = 'htdocs/',
-	TEMPLATES_DIR = 'templates/',
-	DATA_DIR = 'data/',
-	DEFAULT_TEMPLATE = 'page.xml',
-	URL_PREFIXES = {
-		ru: 'http://sapegin.ru/',
-		en: 'http://sapegin.me/'
-	},
-	URI_PREFIXES = {
-		ru: '/',
-		en: '/'
-	};
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 var fs = require('fs'),
 	path = require('path'),
 	fest = require('./lib/fest/fest');
+
+// Options
+try {
+	var o = require('../sweet-config.js');
+}
+catch (e) {
+	error('Cannot open configuration file sweet-config.js.');
+}
+
+
+// Global vars
+var compiledTemplates = {};
 
 
 // Run Forrest run!
@@ -58,110 +53,52 @@ build();
 
 
 function build() {
-	var files = findSync(CONTENT_DIR.slice(0, -1)),
-		filesData = {},
-		templatesChanged = isTemplatesChanged(),
-		sitemapFile = DATA_DIR + 'sitemap',
+	var datasets = {},
 		sitemap = {},
-		commons = {};
+		commons = {},
+		templates = {};
 
-	if (path.existsSync(sitemapFile)) {
-		sitemap = readJsonFile(sitemapFile);
-	}
-
+	var files = getFilesList(o.CONTENT_DIR);
 	for (var fileIdx = 0; fileIdx < files.length; fileIdx++) {
-		var srcPath = files[fileIdx];
-		if (fs.statSync(srcPath).isDirectory()) continue;
-
-		var file = srcPath.replace(CONTENT_DIR, ''),
-			resultPath = PUBLISH_DIR + replaceFileExtension(file, 'html');
-
-		// Skip unmodified files
-		if (!templatesChanged && path.existsSync(resultPath) &&
-			fs.statSync(srcPath).mtime <= fs.statSync(resultPath).mtime) continue;
+		var srcPath = files[fileIdx],
+			lang = getFileLanguage(srcPath),
+			fileId = lang + '/' + getFileSignificantPath(srcPath);
+			resultPath = path.join(o.PUBLISH_DIR, fileId + '.html');
 
 		// Read contents
 		var data = getContent(srcPath);
 		if (data.error) {
-			console.log('Parse error in content file ' + srcPath + ':\n' + data.error);
+			error('Parse error in content file ' + srcPath + ':\n' + data.error);
 			return;
 		}
 
 		// Common data file?
-		if (srcPath.indexOf(CONTENT_DIR + '.') === 0) {
-			commons[srcPath.substring(CONTENT_DIR.length + 1, srcPath.lastIndexOf('.'))] = data;
+		if (srcPath.charAt(o.CONTENT_DIR.length) === '.') {
+			commons[srcPath.substring(o.CONTENT_DIR.length + 1, srcPath.lastIndexOf('.'))] = data;
 			continue;
 		}
 
 		// Check template
 		if (data.template) {
-			var templatePath = TEMPLATES_DIR + data.template + '.xml';
-			if (path.existsSync(templatePath)) {
-				data.template = templatePath;
-			}
-			else {
-				console.log('Template file ' + templatePath + ' not found.');
-				return;
-			}
+			templates[data.template] = true;
 		}
 		else {
-			data.template = TEMPLATES_DIR + DEFAULT_TEMPLATE;
+			data.template = o.DEFAULT_TEMPLATE_ID;
 		}
-
-		var lang = getFileLanguage(srcPath),
-			id = lang + '/' + getFileSignificantPath(srcPath);
 
 		// Additional data
 		data.lang = lang;
-		data.path = id;
+		data.path = fileId;
 		data.url = fileToUrl(srcPath);
 		data.uri = fileToUri(srcPath);
 		
-		// Sitemap
-		sitemap[id] = getSitemapData(data);
-
-		filesData[file] = data;
+		sitemap[fileId] = getSitemapData(data);
+		datasets[fileId] = data;
 	}
 
-	fs.writeFile(sitemapFile, JSON.stringify(sitemap), function(error) {
-		if (error) {
-			console.log('Cannot write file ' + sitemapFile + '.');
-		}
-	});
-
-	generateFiles(filesData, sitemap, commons);
-}
-
-
-function isTemplatesChanged() {
-	var timestampFile = DATA_DIR + 'templates-timestamp',
-		files = fs.readdirSync(TEMPLATES_DIR);
-
-	if (!path.existsSync(timestampFile)) {
-		updateTemplatesTimestamp(timestampFile);
-		return true;
-	}
-
-	var timestamp = fs.statSync(timestampFile).mtime;
-	for (var fileIdx = 0; fileIdx < files.length; fileIdx++) {
-		var templatePath = TEMPLATES_DIR + files[fileIdx],
-			templateMtime = fs.statSync(templatePath).mtime;
-		if (templateMtime > timestamp) {
-			updateTemplatesTimestamp(timestampFile);
-			return true;
-		}
-	}
-
-	return false;
-}
-
-
-function updateTemplatesTimestamp(timestampFile) {
-	fs.writeFile(timestampFile, '', function(error) {
-		if (error) {
-			console.log('Cannot write file ' + timestampFile + '.');
-		}
-	});
+	templates[o.DEFAULT_TEMPLATE_ID] = true;
+	compileTemplates(templates);
+	generateFiles(datasets, sitemap, commons);
 }
 
 function getSitemapData(data) {
@@ -174,40 +111,42 @@ function getSitemapData(data) {
 	return sitemapData;
 }
 
+function compileTemplates(templates) {
+	for (var templateId in templates) {
+		var templatePath = path.join(o.TEMPLATES_DIR, templateId + '.xhtml');
+		if (!path.existsSync(templatePath)) {
+			error('Template file ' + templatePath + ' not found.');
+			return;
+		}
+		fest.compile(templatePath).then(function(template) {
+			compiledTemplates[templateId] = template;
+		});
+	}
+}
+
 function fileToUrl(filepath) {
-	return URL_PREFIXES[getFileLanguage(filepath)] + getFileSignificantPath(filepath);
+	return o.URL_PREFIXES[getFileLanguage(filepath)] + getFileSignificantPath(filepath);
 }
 
 function fileToUri(filepath) {
-	return URI_PREFIXES[getFileLanguage(filepath)] + getFileSignificantPath(filepath);
+	return o.URI_PREFIXES[getFileLanguage(filepath)] + getFileSignificantPath(filepath);
 }
 
 function getFileSignificantPath(filepath) {
-	filepath = filepath.replace(CONTENT_DIR, '');
-	return filepath.substring(filepath.indexOf('/') + 1, filepath.lastIndexOf('.'))
+	var basename = path.basename(filepath).replace(path.extname(filepath), '');
+	filepath = filepath.replace(path.join(o.CONTENT_DIR, getFileLanguage(filepath)), '');
+	filepath = filepath.slice(1);
+	filepath = path.dirname(filepath);
+	return path.join(filepath, basename).replace('\\', '/');
 }
 
 function getFileLanguage(filepath) {
-	filepath = filepath.replace(CONTENT_DIR, '');
-	return filepath.substring(0, filepath.indexOf('/'));
-}
-
-function getFileExtension(filepath) {
-	return filepath.substring(filepath.lastIndexOf('.') + 1);
-}
-
-function getFileDir(filepath) {
-	return filepath.substring(0, filepath.lastIndexOf('/'))
-}
-
-function replaceFileExtension(filepath, nexExt) {
-	return filepath.replace('.' + getFileExtension(filepath), '.' + nexExt)
+	return path.basename(path.dirname(filepath));
 }
 
 function generateFiles(filesData, sitemap, commons) {
-	for (var file in filesData) {
-		var data = filesData[file],
-			resultPath = PUBLISH_DIR + replaceFileExtension(file, 'html');
+	for (var fileId in filesData) {
+		var data = filesData[fileId];
 
 		// Special data
 		data.map = sitemap;
@@ -216,22 +155,22 @@ function generateFiles(filesData, sitemap, commons) {
 		}
 
 		transform(data.template, data, function(result) {
-			mkdirSyncRecursive(getFileDir(resultPath));
+			var resultPath = path.join(o.PUBLISH_DIR, fileId + '.html');
+			mkdirSyncRecursive(path.dirname(resultPath));
 			fs.writeFile(resultPath, result, function(error) {
 				if (error) {
-					console.log('Cannot write file ' + resultPath + '.');
+					error('Cannot write file ' + resultPath + '.');
 				}
 			});
 		});
 	}
 }
 
-
 function getContent(file) {
 	var content = readUtfFile(file),
-		ext = getFileExtension(file);
+		ext = path.extname(file);
 	
-	if (ext === 'js' || ext === 'json') {
+	if (ext === '.js' || ext === '.json') {
 		return readJsonFile(file);
 	}
 
@@ -259,6 +198,25 @@ function getContent(file) {
 	return result;
 }
 
+function getFilesList(dir) {
+	var lastChar = dir.charAt(dir.length - 1);
+	if (lastChar === '/' || lastChar === '\\') {
+		dir = dir.slice(0, -1);
+	}
+	
+	var items = findSync(dir),
+		files = [];
+	
+	for (var itemIdx = 0; itemIdx < items.length; itemIdx++) {
+		var item = items[itemIdx];
+		if (!fs.statSync(item).isDirectory()) {
+			files.push(path.normalize(item));
+		}
+	}
+
+	return files;
+}
+
 function readJsonFile(filepath) {
 	var data = readUtfFile(filepath);
 	if (!data) return {};
@@ -282,31 +240,21 @@ function error(message) {
 	process.exit(1);
 }
 
-function transform(file, json, callback) {
-	fest.compile(file).then(function(template) {
-		fest.transform(template, json).then(function(result) {
-			callback(result);
-		});
-	});
+function transform(templateId, json, callback) {
+	var template = (new Function('return ' + compiledTemplates[templateId]))();
+	callback(template(json));
 }
 
 // https://github.com/ryanmcgrath/wrench-js/blob/master/lib/wrench.js
-function mkdirSyncRecursive(path, mode) {
-	var self = this;
-
+function mkdirSyncRecursive(dir, mode) {
 	try {
-		fs.mkdirSync(path, mode);
-	} catch(err) {
-		if(err.code == "ENOENT") {
-			var slashIdx = path.lastIndexOf("/");
-			if(slashIdx > 0) {
-				var parentPath = path.substring(0, slashIdx);
-				mkdirSyncRecursive(parentPath, mode);
-				mkdirSyncRecursive(path, mode);
-			} else {
-				throw err;
-			}
-		} else if(err.code == "EEXIST") {
+		fs.mkdirSync(dir, mode);
+	}
+	catch (err) {
+		if (err.code === 'ENOENT') {
+			mkdirSyncRecursive(path.dirname(dir), mode);
+			mkdirSyncRecursive(dir, mode);
+		} else if (err.code === 'EEXIST') {
 			return;
 		} else {
 			throw err;
@@ -323,7 +271,7 @@ function findSync(dir, cb) {
     }
     
     return fs.readdirSync(dir).reduce(function (files, file) {
-        var p = dir + '/' + file;
+        var p = path.join(dir, file);
         var stat = fs.statSync(p);
         if (cb) cb(p, stat);
         files.push(p);
