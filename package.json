@@ -7,7 +7,8 @@
     "type": "git",
     "url": "git@github.com:sapegin/sweet.git"
   },
-  "main": "sweet.js",
+  "main": "./sweet.js",
+  "bin": "./sweet.js",
   "engines": {
     "node": ">0.6.x"
   },

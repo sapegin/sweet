@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 /**
  * Sweet
  * Simplest Web Engine Ever, The
@@ -12,9 +14,10 @@ var fs = require('fs'),
 	path = require('path'),
 	fest = require('fest');
 
+
 // Options
 try {
-	var o = require('./sweet-config.js');
+	var o = require(path.join(process.cwd(), 'sweet-config.js'));
 }
 catch (e) {
 	error('Cannot open configuration file sweet-config.js.');
