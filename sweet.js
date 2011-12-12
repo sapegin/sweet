@@ -2,42 +2,19 @@
  * Sweet
  * Simplest Web Engine Ever, The
  *
- * @version 0.3
- * @requires Node.js, Fest
  * @author Artem Sapegin
  * @copyright 2011 Artem Sapegin (sapegin.ru)
  * @license http://creativecommons.org/licenses/by/3.0/
  */
 
-/*
-@todo
-+ Поиск новых документов
-+ Контент в JSON
-+ JSON со свойствами всех файлов контента
-+ Сохранение его в файл
-+ Проверить работу с вложенными папками
-+ Генерация урлов
-+ Мультиязычность блеать
-* Подумать, как это скрестить с минификатором/склейщиком js/css
-+ Общие данные
-+ Вынести настройки в отдельный файл
-+ Выкинуть все проверки на изменения
-- Слежение за внешними файлами (js, css)
-+ Предварительная компиляция шаблонов
-- Вырезать class=""
-- Типографика
-- Нормальная проверка JSON на ошибки с указанием строки
-+ Заменить кривые функции на http://nodejs.org/docs/v0.6.1/api/path.html
-*/
-
 
 var fs = require('fs'),
 	path = require('path'),
-	fest = require('./lib/fest/fest');
+	fest = require('fest');
 
 // Options
 try {
-	var o = require('../sweet-config.js');
+	var o = require('./sweet-config.js');
 }
 catch (e) {
 	error('Cannot open configuration file sweet-config.js.');

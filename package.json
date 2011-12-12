@@ -1,0 +1,20 @@
+{
+  "author": "Artem Sapegin <artem@sapegin.ru> (http://sapegin.ru)",
+  "name": "sweet",
+  "description": "Simplest Web Engine Ever, The",
+  "version": "0.3.1",
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:sapegin/sweet.git"
+  },
+  "main": "sweet.js",
+  "engines": {
+    "node": ">0.6.x"
+  },
+  "dependencies": {
+  	"fest": "git://github.com/sapegin/Fest.git#master",
+    "stylus": "*",
+    "requirejs": "*"  	
+  },
+  "devDependencies": {}
+}
