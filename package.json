@@ -13,9 +13,9 @@
     "node": ">0.6.x"
   },
   "dependencies": {
-  	"fest": "git://github.com/sapegin/Fest.git#master",
+  	"fest": "git://github.com/AndrewSumin/Fest.git#master",
     "stylus": "*",
-    "optparse": "*"  	
+    "optparse": "*"
   },
   "devDependencies": {}
 }
