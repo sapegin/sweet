@@ -15,7 +15,7 @@
   "dependencies": {
   	"fest": "git://github.com/sapegin/Fest.git#master",
     "stylus": "*",
-    "requirejs": "*"  	
+    "optparse": "*"  	
   },
   "devDependencies": {}
 }

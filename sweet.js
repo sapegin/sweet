@@ -12,10 +12,12 @@
 
 var fs = require('fs'),
 	path = require('path'),
-	fest = require('fest');
+	optparse = require('optparse'),
+	fest = require('fest'),
+	stylus = require('stylus');
 
 
-// Options
+// Config
 try {
 	var o = require(path.join(process.cwd(), 'sweet-config.js'));
 }
@@ -24,19 +26,41 @@ catch (e) {
 }
 
 
+// Command line options
+var switches = [
+    ['-h', '--help', 'Shows this screen'],
+    ['-w', '--watch', 'Watch styles for changes']
+];
+var parser = new optparse.OptionParser(switches),
+	isBuild = true;
+
+parser.on('help', function() {
+	console.log(parser.toString());
+	isBuild = false;
+});
+
+parser.on('watch', function() {
+	watch();
+	isBuild = false;
+});
+
+parser.parse(process.argv);
+
+
 // Global vars
 var compiledTemplates = {};
 
 
 // Run Forrest run!
-build();
+if (isBuild) build();
 
 
 function build() {
 	var datasets = {},
 		sitemap = {},
 		commons = {},
-		templates = {};
+		templates = {},
+		versions = {};
 
 	var files = getFilesList(o.CONTENT_DIR);
 	for (var fileIdx = 0; fileIdx < files.length; fileIdx++) {
@@ -76,9 +100,59 @@ function build() {
 		datasets[fileId] = data;
 	}
 
+	// File versions
+	if (o.FILES) {
+		for (var id in o.FILES) {
+			var file = o.FILES[id];
+			if (!path.existsSync(file[0])) {
+				error('Versioned file ' + file[0] + ' not found');
+			}
+			versions[id] = file[1].replace('{version}', fs.statSync(file.path).mtime.getTime());
+		}
+	}
+
 	templates[o.DEFAULT_TEMPLATE_ID] = true;
 	compileTemplates(templates);
-	generateFiles(datasets, sitemap, commons);
+	generateFiles(datasets, sitemap, commons, versions);
+}
+
+function watch() {
+	if (!o.STYLESHEETS || !o.STYLESHEETS_DIR) {
+		console.log('Dunno what to watch. STYLESHEETS and/or STYLESHEETS_DIR is not defined.')
+		return;
+	}
+
+	// Create CSS files first time
+	for (var ssIdx = 0; ssIdx < o.STYLESHEETS.length; ssIdx++) {
+		var ss = o.STYLESHEETS[ssIdx];
+		//if (!path.existsSync(ss[1])) {
+			stylusBuild(ss[0], ss[1]);
+		//}
+	}
+
+	// Watch
+	console.log('\033[90mWatching\033[0m...');
+	var prevStats = {size:0, mtime:0};
+	fs.watch(o.STYLESHEETS_DIR, function(event, filename) {
+		if (!filename) return;
+
+		// Prevent multiple recompiling
+		var stats = fs.statSync(path.join(o.STYLESHEETS_DIR, filename));
+		if (stats.size === prevStats.size && stats.mtime.getTime() === prevStats.mtime.getTime()) {
+        	return;
+        }
+        prevStats = stats;
+
+		console.log('\033[90mChanges detected\033[0m in %s', filename);
+		updateStylesheets();
+	});
+}
+
+function updateStylesheets() {
+	for (var ssIdx = 0; ssIdx < o.STYLESHEETS.length; ssIdx++) {
+		var ss = o.STYLESHEETS[ssIdx];
+		stylusBuild(ss[0], ss[1]);
+	}
 }
 
 function getSitemapData(data) {
@@ -124,12 +198,13 @@ function getFileLanguage(filepath) {
 	return path.basename(path.dirname(filepath));
 }
 
-function generateFiles(filesData, sitemap, commons) {
+function generateFiles(filesData, sitemap, commons, versions) {
 	for (var fileId in filesData) {
 		var data = filesData[fileId];
 
 		// Special data
 		data.map = sitemap;
+		data.files = versions;
 		for (var key in commons) {
 			data[key] = commons[key];
 		}
@@ -137,8 +212,8 @@ function generateFiles(filesData, sitemap, commons) {
 		transform(data.template, data, function(result) {
 			var resultPath = path.join(o.PUBLISH_DIR, fileId + '.html');
 			mkdirSyncRecursive(path.dirname(resultPath));
-			fs.writeFile(resultPath, result, function(error) {
-				if (error) {
+			fs.writeFile(resultPath, result, function(err) {
+				if (err) {
 					error('Cannot write file ' + resultPath + '.');
 				}
 			});
@@ -216,7 +291,7 @@ function readUtfFile(filepath) {
 }
 
 function error(message) {
-	console.log(message);
+	console.error('\033[31m%s\033[0m', message);
 	process.exit(1);
 }
 
@@ -262,4 +337,29 @@ function findSync(dir, cb) {
         
         return files;
     }, []);
+}
+
+
+/* Stylus functions */
+
+function stylusBuild(stylpath, csspath) {
+	var styl = readUtfFile(stylpath);
+	if (!styl) error('Cannot open stylesheet ' + stylpath + '.');
+	//styl = stylusPreprocess(styl);
+	var options = o.STYLUS_OPTIONS || {
+		compress: false
+	};
+
+	stylus(styl)
+		.set('filename', stylpath)
+		.set('compress', options.compress)
+		.render(function(err, css){
+			if (err) error('Stylus error.' + '\n\n' + err.message || err.stack);
+
+			fs.writeFile(csspath, css, function(err) {
+				if (err) {
+					error('Cannot write file ' + csspath + '.');
+				}
+			});
+		});
 }
