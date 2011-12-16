@@ -77,8 +77,10 @@ function build() {
 		}
 
 		// Common data file?
-		if (srcPath.charAt(o.CONTENT_DIR.length) === '.') {
-			commons[srcPath.substring(o.CONTENT_DIR.length + 1, srcPath.lastIndexOf('.'))] = data;
+		var filename = path.basename(srcPath),
+			ext = path.extname(srcPath);
+		if (filename.charAt(0) === '.' && (ext === '.js' || ext === '.json')) {
+			commons[filename.slice(1).replace(ext, '')] = data;
 			continue;
 		}
 
@@ -132,13 +134,14 @@ function watch() {
 
 	// Watch
 	console.log('\033[90mWatching\033[0m...');
-	var prevStats = {size:0, mtime:0};
+	var prevStats;
 	fs.watch(o.STYLESHEETS_DIR, function(event, filename) {
 		if (!filename) return;
 
 		// Prevent multiple recompiling
 		var stats = fs.statSync(path.join(o.STYLESHEETS_DIR, filename));
-		if (stats.size === prevStats.size && stats.mtime.getTime() === prevStats.mtime.getTime()) {
+		if (prevStats &&
+			(stats.size === prevStats.size && stats.mtime.getTime() === prevStats.mtime.getTime())) {
         	return;
         }
         prevStats = stats;
@@ -353,6 +356,7 @@ function stylusBuild(stylpath, csspath) {
 	stylus(styl)
 		.set('filename', stylpath)
 		.set('compress', options.compress)
+		.set('include css', true)
 		.render(function(err, css){
 			if (err) error('Stylus error.' + '\n\n' + err.message || err.stack);
 
