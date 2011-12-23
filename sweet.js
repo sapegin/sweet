@@ -182,11 +182,15 @@ function compileTemplates(templates) {
 }
 
 function fileToUrl(filepath) {
-	return o.URL_PREFIXES[getFileLanguage(filepath)] + getFileSignificantPath(filepath);
+	return o.URL_PREFIXES[getFileLanguage(filepath)] + getFileUriPart(filepath);
 }
 
 function fileToUri(filepath) {
-	return o.URI_PREFIXES[getFileLanguage(filepath)] + getFileSignificantPath(filepath);
+	return o.URI_PREFIXES[getFileLanguage(filepath)] + getFileUriPart(filepath);
+}
+
+function getFileUriPart(filepath) {
+	return getFileSignificantPath(filepath).replace(/^index$/, '/');
 }
 
 function getFileSignificantPath(filepath) {
