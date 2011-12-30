@@ -32,8 +32,8 @@ var compiledTemplates = {};
 
 // Command line options
 var switches = [
-    ['-h', '--help', 'Shows this screen'],
-    ['-w', '--watch', 'Watch styles for changes']
+	['-h', '--help', 'Shows this screen'],
+	['-w', '--watch', 'Watch styles for changes']
 ];
 var parser = new optparse.OptionParser(switches),
 	isBuild = true;
@@ -342,24 +342,24 @@ function mkdirSyncRecursive(dir, mode) {
 
 // https://github.com/substack/node-findit/blob/master/index.js
 function findSync(dir, cb) {
-    var rootStat = fs.statSync(dir);
-    if (!rootStat.isDirectory()) {
-        if (cb) cb(dir, rootStat);
-        return [dir];
-    }
-    
-    return fs.readdirSync(dir).reduce(function (files, file) {
-        var p = path.join(dir, file);
-        var stat = fs.statSync(p);
-        if (cb) cb(p, stat);
-        files.push(p);
-        
-        if (stat.isDirectory()) {
-            files.push.apply(files, findSync(p, cb));
-        }
-        
-        return files;
-    }, []);
+	var rootStat = fs.statSync(dir);
+	if (!rootStat.isDirectory()) {
+		if (cb) cb(dir, rootStat);
+		return [dir];
+	}
+	
+	return fs.readdirSync(dir).reduce(function (files, file) {
+		var p = path.join(dir, file);
+		var stat = fs.statSync(p);
+		if (cb) cb(p, stat);
+		files.push(p);
+		
+		if (stat.isDirectory()) {
+			files.push.apply(files, findSync(p, cb));
+		}
+		
+		return files;
+	}, []);
 }
 
 
