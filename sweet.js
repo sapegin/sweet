@@ -14,7 +14,8 @@ var fs = require('fs'),
 	path = require('path'),
 	optparse = require('optparse'),
 	fest = require('fest'),
-	stylus = require('stylus');
+	stylus = require('stylus'),
+	colors = require('colors');
 
 
 // Config
@@ -122,7 +123,7 @@ function build(recompile) {
 }
 
 function watch() {
-	console.log('\033[90mWatching\033[0m...');
+	console.log('Sweet watching...'.grey);
 	watchTemplatesAndContent();
 	watchStylesheets();
 }
@@ -162,7 +163,7 @@ function watchFolder(dir, callback) {
 		}
 		prevStats = stats;
 
-		console.log('\033[90mChanges detected\033[0m in %s', filename);
+		console.log('Changes detected in'.grey, colors.blue(filename));
 		callback();
 	});
 }
@@ -314,7 +315,7 @@ function readUtfFile(filepath) {
 }
 
 function error(message) {
-	console.error('\033[31m%s\033[0m', message);
+	console.error('%s'.red, message);
 	process.exit(1);
 }
 

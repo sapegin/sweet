@@ -15,7 +15,8 @@
   "dependencies": {
   	"fest": "git://github.com/AndrewSumin/Fest.git#master",
     "stylus": "*",
-    "optparse": "*"
+    "optparse": "*",
+    "colors": "*"
   },
   "devDependencies": {}
 }
