@@ -28,25 +28,32 @@ catch (e) {
 
 
 // Global vars
-var compiledTemplates = {};
+var compiledTemplates = {},
+	isDebug = false;
 
 
 // Command line options
 var switches = [
 	['-h', '--help', 'Shows this screen'],
-	['-w', '--watch', 'Watch styles for changes']
+	['-d', '--debug', 'Debug mode'],
+	['-w', '--watch', 'Watch for changes in content, templates and styles. (Implies --debug)']
 ];
 var parser = new optparse.OptionParser(switches),
 	isBuild = true;
 
 parser.on('help', function() {
-	console.log(parser.toString());
 	isBuild = false;
+	console.log(parser.toString());
+});
+
+parser.on('debug', function() {
+	isDebug = true;
 });
 
 parser.on('watch', function() {
-	watch();
 	isBuild = false;
+	isDebug = true;
+	watch();
 });
 
 parser.parse(process.argv);
@@ -229,6 +236,7 @@ function generateFiles(filesData, sitemap, commons, versions) {
 		// Special data
 		data.map = sitemap;
 		data.files = versions;
+		data.debug = isDebug;
 		for (var key in commons) {
 			data[key] = commons[key];
 		}
@@ -369,14 +377,10 @@ function findSync(dir, cb) {
 function stylusBuild(stylpath, csspath) {
 	var styl = readUtfFile(stylpath);
 	if (!styl) error('Cannot open stylesheet ' + stylpath + '.');
-	//styl = stylusPreprocess(styl);
-	var options = o.STYLUS_OPTIONS || {
-		compress: false
-	};
 
 	stylus(styl)
 		.set('filename', stylpath)
-		.set('compress', options.compress)
+		.set('compress', isDebug)
 		.set('include css', true)
 		.render(function(err, css){
 			if (err) error('Stylus error.' + '\n\n' + err.message || err.stack);
