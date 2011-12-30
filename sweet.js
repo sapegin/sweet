@@ -26,6 +26,10 @@ catch (e) {
 }
 
 
+// Global vars
+var compiledTemplates = {};
+
+
 // Command line options
 var switches = [
     ['-h', '--help', 'Shows this screen'],
@@ -47,16 +51,13 @@ parser.on('watch', function() {
 parser.parse(process.argv);
 
 
-// Global vars
-var compiledTemplates = {};
-
-
 // Run Forrest run!
 if (isBuild) build();
 
 
-function build() {
-	var datasets = {},
+function build(recompile) {
+	var recompile = recompile !== false,
+		datasets = {},
 		sitemap = {},
 		commons = {},
 		templates = {},
@@ -85,7 +86,7 @@ function build() {
 		}
 
 		// Check template
-		if (data.template) {
+		if (data.template && (recompile || (!recompile && !compiledTemplates[data.template]))) {
 			templates[data.template] = true;
 		}
 		else {
@@ -113,41 +114,56 @@ function build() {
 		}
 	}
 
-	templates[o.DEFAULT_TEMPLATE_ID] = true;
+	if (recompile) {
+		templates[o.DEFAULT_TEMPLATE_ID] = true;
+	}
 	compileTemplates(templates);
 	generateFiles(datasets, sitemap, commons, versions);
 }
 
 function watch() {
+	console.log('\033[90mWatching\033[0m...');
+	watchTemplatesAndContent();
+	watchStylesheets();
+}
+
+function watchTemplatesAndContent() {
+	build();
+	watchFolder(o.CONTENT_DIR, function() {
+		build(false);
+	});
+	watchFolder(o.TEMPLATES_DIR, build);
+}
+
+function watchStylesheets() {
 	if (!o.STYLESHEETS || !o.STYLESHEETS_DIR) {
-		console.log('Dunno what to watch. STYLESHEETS and/or STYLESHEETS_DIR is not defined.')
 		return;
 	}
 
 	// Create CSS files first time
 	for (var ssIdx = 0; ssIdx < o.STYLESHEETS.length; ssIdx++) {
 		var ss = o.STYLESHEETS[ssIdx];
-		//if (!path.existsSync(ss[1])) {
-			stylusBuild(ss[0], ss[1]);
-		//}
+		stylusBuild(ss[0], ss[1]);
 	}
 
-	// Watch
-	console.log('\033[90mWatching\033[0m...');
+	watchFolder(o.STYLESHEETS_DIR, updateStylesheets);
+}
+
+function watchFolder(dir, callback) {
 	var prevStats;
-	fs.watch(o.STYLESHEETS_DIR, function(event, filename) {
+	fs.watch(dir, function(event, filename) {
 		if (!filename) return;
 
 		// Prevent multiple recompiling
-		var stats = fs.statSync(path.join(o.STYLESHEETS_DIR, filename));
+		var stats = fs.statSync(path.join(dir, filename));
 		if (prevStats &&
 			(stats.size === prevStats.size && stats.mtime.getTime() === prevStats.mtime.getTime())) {
-        	return;
-        }
-        prevStats = stats;
+			return;
+		}
+		prevStats = stats;
 
 		console.log('\033[90mChanges detected\033[0m in %s', filename);
-		updateStylesheets();
+		callback();
 	});
 }
 
