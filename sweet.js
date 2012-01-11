@@ -213,7 +213,7 @@ function fileToUri(filepath) {
 }
 
 function getFileUriPart(filepath) {
-	return getFileSignificantPath(filepath).replace(/^index$/, '/');
+	return getFileSignificantPath(filepath).replace(/^index$/, '');
 }
 
 function getFileSignificantPath(filepath) {
