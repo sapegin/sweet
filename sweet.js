@@ -199,9 +199,8 @@ function compileTemplates(templates) {
 			error('Template file ' + templatePath + ' not found.');
 			return;
 		}
-		fest.compile(templatePath).then(function(template) {
-			compiledTemplates[templateId] = template;
-		});
+
+		compiledTemplates[templateId] = (new Function('return ' + fest.compile(templatePath)))();
 	}
 }
 
@@ -328,7 +327,10 @@ function error(message) {
 }
 
 function transform(templateId, json, callback) {
-	var template = (new Function('return ' + compiledTemplates[templateId]))();
+	var template = compiledTemplates[templateId];
+	if (!template) {
+		error('Template ' + templateId + ' is not invokable.');
+	}
 	callback(template(json));
 }
 
