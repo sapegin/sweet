@@ -16,7 +16,7 @@ var fs = require('fs'),
 	fest = require('fest'),
 	stylus = require('stylus'),
 	colors = require('colors'),
-	watcher = require('treewatcher');
+	treewatcher = require('treewatcher');
 
 
 // Config
@@ -159,19 +159,18 @@ function watchStylesheets() {
 }
 
 function watchFolder(dir, callback) {
-	var w = new watcher.Watcher({
+	var watcher = new treewatcher.Watcher({
 		throttle: 50
 	});
 
-	w.on('change', function(event, path, w) {
+	watcher.on('change', function(event, path, watcher) {
 		console.log('Changes detected in'.grey, colors.blue(path));
 		callback();
 	});
 
-	w.watch(dir, function(err, w) {
+	watcher.watch(dir, function(err, watcher) {
 		if (err) {
 			error('Cannnot watch ' + dir)
-			return;
 		}
 	});
 }
