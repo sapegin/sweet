@@ -15,7 +15,8 @@ var fs = require('fs'),
 	optparse = require('optparse'),
 	fest = require('fest'),
 	stylus = require('stylus'),
-	colors = require('colors');
+	colors = require('colors'),
+	watcher = require('treewatcher');
 
 
 // Config
@@ -158,20 +159,20 @@ function watchStylesheets() {
 }
 
 function watchFolder(dir, callback) {
-	var prevStats;
-	fs.watch(dir, function(event, filename) {
-		if (!filename) return;
+	var w = new watcher.Watcher({
+		throttle: 50
+	});
 
-		// Prevent multiple recompiling
-		var stats = fs.statSync(path.join(dir, filename));
-		if (prevStats &&
-			(stats.size === prevStats.size && stats.mtime.getTime() === prevStats.mtime.getTime())) {
+	w.on('change', function(event, path, w) {
+		console.log('Changes detected in'.grey, colors.blue(path));
+		callback();
+	});
+
+	w.watch(dir, function(err, w) {
+		if (err) {
+			error('Cannnot watch ' + dir)
 			return;
 		}
-		prevStats = stats;
-
-		console.log('Changes detected in'.grey, colors.blue(filename));
-		callback();
 	});
 }
 

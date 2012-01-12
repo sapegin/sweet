@@ -14,6 +14,7 @@
   },
   "dependencies": {
   	"fest": "git://github.com/AndrewSumin/Fest.git#master",
+  	"treewatcher": "git://github.com/daanlib/tree-watcher.git#master",
     "stylus": "*",
     "optparse": "*",
     "colors": "*"
