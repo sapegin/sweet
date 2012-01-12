@@ -95,8 +95,10 @@ function build(recompile) {
 		}
 
 		// Check template
-		if (data.template && (recompile || (!recompile && !compiledTemplates[data.template]))) {
-			templates[data.template] = true;
+		if (data.template) {
+			if (recompile || (!recompile && !compiledTemplates[data.template])) {
+				templates[data.template] = true;
+			}
 		}
 		else {
 			data.template = o.DEFAULT_TEMPLATE_ID;
