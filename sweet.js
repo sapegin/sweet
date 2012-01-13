@@ -202,8 +202,12 @@ function compileTemplates(templates) {
 			return;
 		}
 
-		compiledTemplates[templateId] = (new Function('return ' + fest.compile(templatePath)))();
+		compiledTemplates[templateId] = (new Function('return ' + fest.compile(toUnixPath(templatePath))))();
 	}
+}
+
+function toUnixPath(filepath) {
+	return filepath.replace(/\\/g, '/');
 }
 
 function fileToUrl(filepath) {
@@ -223,7 +227,7 @@ function getFileSignificantPath(filepath) {
 	filepath = filepath.replace(path.join(o.CONTENT_DIR, getFileLanguage(filepath)), '');
 	filepath = filepath.slice(1);
 	filepath = path.dirname(filepath);
-	return path.join(filepath, basename).replace('\\', '/');
+	return toUnixPath(path.join(filepath, basename));
 }
 
 function getFileLanguage(filepath) {
