@@ -12,6 +12,8 @@
 
 var fs = require('fs'),
 	path = require('path'),
+	http = require('http'),
+	url = require('url'),
 	optparse = require('optparse'),
 	fest = require('fest'),
 	stylus = require('stylus'),
@@ -34,12 +36,13 @@ var compiledTemplates = {},
 
 
 // Command line options
-var switches = [
-	['-h', '--help', 'Shows this screen'],
-	['-d', '--debug', 'Debug mode'],
-	['-w', '--watch', 'Watch for changes in content, templates and styles. (Implies --debug)']
-];
-var parser = new optparse.OptionParser(switches),
+var parser = new optparse.OptionParser([
+		['-h', '--help', 'Shows this screen'],
+		['-d', '--debug', 'Debug mode'],
+		['-w', '--watch', 'Watch for changes in content, templates and styles. (Implies --debug)'],
+		['-s', '--serve', 'Serve website to localhost'],
+		['-p', '--preview', '--serve --watch --debug']
+	]),
 	isBuild = true;
 
 parser.on('help', function() {
@@ -52,8 +55,17 @@ parser.on('debug', function() {
 });
 
 parser.on('watch', function() {
-	isBuild = false;
 	isDebug = true;
+	watch();
+});
+
+parser.on('serve', function() {
+	serve();
+});
+
+parser.on('preview', function() {
+	isDebug = true;
+	serve();
 	watch();
 });
 
@@ -136,6 +148,61 @@ function watch() {
 	console.log('Sweet watching...'.grey);
 	watchTemplatesAndContent();
 	watchStylesheets();
+}
+
+function serve(lang, port) {
+	if (!lang && o.LANGS.length) lang = o.LANGS[0];
+	if (!port) port = 8000;
+	var mimeTypes = {
+		'default': 'text/plain',
+		'.html': 'text/html',
+		'.jpg': 'image/jpeg',
+		'.png': 'image/png',
+		'.js': 'text/javascript',
+		'.css': 'text/css'
+	};	
+
+	var server = http.createServer(function(req, res) {
+		var uri = url.parse(req.url).pathname,
+			filename;
+		if (lang && uri.indexOf('.') === -1) {  // Page
+			filename = path.join(o.PUBLISH_DIR, lang, (uri === '/' ? '/index' : uri) + '.html');
+		}
+		else {  // File
+			filename = path.join(o.PUBLISH_DIR, uri);
+		}
+
+		path.exists(filename, function(exists) {
+			if (!exists) {
+				console.log(colors.red('404: ' + uri));
+				res.writeHead(404);
+				res.end('404: Not found.');
+				return;
+			}
+
+			console.log('200: ' + uri);
+			var mimeType = mimeTypes[path.extname(filename)] || mimeTypes['default'];
+			res.writeHead(200, {'Content-Type': mimeType});
+
+			var fileStream = fs.createReadStream(filename);
+			fileStream.pipe(res);
+		});
+	});
+
+	server.on('error', function (e) {
+		if (e.code === 'EADDRINUSE') {
+			serve(lang, port + 1);
+		}
+		else {
+			error('Error running server.\n' + e.code);
+		}
+	});
+
+	server.on('listening', function () {
+		console.log('Sweet is waiting for you at http://127.0.0.1:%s/', server.address().port);
+	});
+
+	server.listen(port);
 }
 
 function watchTemplatesAndContent() {
