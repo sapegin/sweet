@@ -5,8 +5,8 @@
  * Simplest Web Engine Ever, The
  *
  * @author Artem Sapegin
- * @copyright 2011 Artem Sapegin (sapegin.ru)
- * @license http://creativecommons.org/licenses/by/3.0/
+ * @copyright 2012 Artem Sapegin (sapegin.me)
+ * @license MIT
  */
 
 
@@ -160,7 +160,7 @@ function serve(lang, port) {
 		'.png': 'image/png',
 		'.js': 'text/javascript',
 		'.css': 'text/css'
-	};	
+	};
 
 	var server = http.createServer(function(req, res) {
 		var uri = url.parse(req.url).pathname,
