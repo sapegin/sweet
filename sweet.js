@@ -29,6 +29,8 @@ catch (e) {
 	error('Cannot open configuration file sweet-config.js.');
 }
 
+init();
+
 // Global vars
 var compiledTemplates = {},
 	isDebug = false;
@@ -74,6 +76,24 @@ parser.parse(process.argv);
 // Run Forrest run!
 if (isBuild) build();
 
+
+function init() {
+	['CONTENT_DIR', 'PUBLISH_DIR', 'TEMPLATES_DIR'].forEach(function(key) {
+		checkConfigVariable(key);
+		normalizeConfigPath(key);
+	});
+	['DEFAULT_TEMPLATE_ID', 'URL_PREFIXES', 'URI_PREFIXES'].forEach(function(key) {
+		checkConfigVariable(key);
+	});
+}
+
+function checkConfigVariable(key) {
+	if (!o[key]) error('Required config variable ' + key + ' not found.');
+}
+
+function normalizeConfigPath(key) {
+	o[key] = path.normalize(o[key]);
+}
 
 function build(recompile) {
 	var recompile = recompile !== false,
