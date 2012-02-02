@@ -29,7 +29,6 @@ catch (e) {
 	error('Cannot open configuration file sweet-config.js.');
 }
 
-
 // Global vars
 var compiledTemplates = {},
 	isDebug = false;
@@ -298,7 +297,12 @@ function getFileSignificantPath(filepath) {
 }
 
 function getFileLanguage(filepath) {
-	return path.basename(path.dirname(filepath));
+	if (!o.LANGS) return null;
+	var relative = filepath.replace(o.CONTENT_DIR, '');
+	if (!relative) return null;
+	var lang = relative.slice(1, 3);
+	if (o.LANGS.indexOf(lang) === -1) return null;
+	return lang;
 }
 
 function generateFiles(filesData, sitemap, commons, versions) {
