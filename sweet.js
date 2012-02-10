@@ -17,6 +17,8 @@ var fs = require('fs'),
 	optparse = require('optparse'),
 	fest = require('fest'),
 	stylus = require('stylus'),
+	jsp = require('uglify-js').parser,
+	pro = require('uglify-js').uglify,
 	colors = require('colors'),
 	treewatcher = require('treewatcher');
 
@@ -124,7 +126,13 @@ function normalizePath(filepath) {
 	return path.join(process.cwd(), filepath);
 }
 
-function build(recompile) {
+function build() {
+	combineJavaScript();
+	buildStylesheets();
+	buildContent();
+}
+
+function buildContent(recompile) {
 	var recompile = recompile !== false,
 		datasets = {},
 		sitemap = {},
@@ -185,11 +193,28 @@ function build(recompile) {
 		}
 	}
 
+	// Combined JavaScripts
+	var javascripts = [];
+	if (isDebug && o.javascripts) {
+		for (var groupIdx = 0; groupIdx < o.javascripts.length; groupIdx++) {
+			var group = o.javascripts[groupIdx];
+			for (var fileIdx = 0, filesCnt = group.in.length; fileIdx < filesCnt; fileIdx++) {
+				javascripts.push(toUnixPath(group.in[fileIdx].replace(o.publish_dir, '')));
+			}
+		}
+	}
+
 	if (recompile) {
 		templates[o.default_template_id] = true;
 	}
 	compileTemplates(templates);
-	generateFiles(datasets, sitemap, commons, versions);
+	generateFiles({
+		datasets: datasets,
+		sitemap: sitemap,
+		commons: commons,
+		versions: versions,
+		javascripts: javascripts 
+	});
 }
 
 function watch() {
@@ -254,11 +279,11 @@ function serve(lang, port) {
 }
 
 function watchTemplatesAndContent() {
-	build();
+	buildContent();
 	watchFolder(o.content_dir, function() {
-		build(false);
+		buildContent(false);
 	});
-	watchFolder(o.templates_dir, build);
+	watchFolder(o.templates_dir, buildContent);
 }
 
 function watchStylesheets() {
@@ -266,13 +291,9 @@ function watchStylesheets() {
 		return;
 	}
 
-	// Create CSS files first time
-	for (var ssIdx = 0; ssIdx < o.stylesheets.length; ssIdx++) {
-		var ss = o.stylesheets[ssIdx];
-		stylusBuild(ss.in, ss.out);
-	}
+	buildStylesheets();
 
-	watchFolder(o.stylesheets_dir, updateStylesheets);
+	watchFolder(o.stylesheets_dir, buildStylesheets);
 }
 
 function watchFolder(dir, callback) {
@@ -292,11 +313,73 @@ function watchFolder(dir, callback) {
 	});
 }
 
-function updateStylesheets() {
+function buildStylesheets() {
+	if (!o.stylesheets) return;
+
 	for (var ssIdx = 0; ssIdx < o.stylesheets.length; ssIdx++) {
 		var ss = o.stylesheets[ssIdx];
 		stylusBuild(ss.in, ss.out);
 	}
+}
+
+function combineJavaScript() {
+	for (var groupIdx = 0; groupIdx < o.javascripts.length; groupIdx++) {
+		var group = o.javascripts[groupIdx];
+		combine({
+			in: group.in,
+			out: group.out,
+			glue: ';',
+			filePreprocessor: function(contents) {
+				return contents.replace(/^;+|;+$/g, '');
+			},
+			postprocessor: function(contents) {
+				var ast = jsp.parse(contents);  // Parse code and get the initial AST
+				ast = pro.ast_mangle(ast);  // Get a new AST with mangled names
+				ast = pro.ast_squeeze(ast);  // Get an AST with compression optimizations
+				return pro.gen_code(ast);
+			}
+		});
+	}
+}
+
+function combine(options) {
+	var inputFiles = options.in,
+		resultFile = options.out,
+		filePreprocessor = options.filePreprocessor,
+		resultMtime = 0;
+	if (path.existsSync(resultFile)) {
+		resultMtime = fs.statSync(resultFile).mtime.getTime();
+	}
+
+	var updated = false,
+		filesContent = [];
+	for (var fileIdx = 0, filesCnt = inputFiles.length; fileIdx < filesCnt; fileIdx++) {
+		var file = inputFiles[fileIdx];
+		if (fs.statSync(file).mtime.getTime() > resultMtime) {
+			updated = true;
+		}
+		
+		var contents = readUtfFile(file);
+		if (typeof filePreprocessor === 'function') { 
+			contents = filePreprocessor(contents);
+		}
+		filesContent.push(contents);
+	}
+
+	if (!updated) return;
+
+	var result = filesContent.join(options.glue || '');
+	if (typeof options.postprocessor === 'function') {
+		result = options.postprocessor(result);
+	}
+
+	// @todo extract to function saveFile()
+	mkdirSyncRecursive(path.dirname(resultFile));
+	fs.writeFile(resultFile, result, function(err) {
+		if (err) {
+			error('Cannot write file ' + resultFile + '.');
+		}
+	});
 }
 
 function getSitemapData(data) {
@@ -354,13 +437,20 @@ function getFileLanguage(filepath) {
 	return lang;
 }
 
-function generateFiles(filesData, sitemap, commons, versions) {
-	for (var fileId in filesData) {
-		var data = filesData[fileId];
+function generateFiles(data) {
+	var datasets = data.datasets,
+		sitemap = data.sitemap,
+		commons = data.commons,
+		versions = data.versions,
+		javascripts = data.javascripts;
+		
+	for (var fileId in datasets) {
+		var data = datasets[fileId];
 
 		// Special data
 		data.map = sitemap;
 		data.files = versions;
+		data.javascripts = javascripts;
 		data.debug = isDebug;
 		for (var key in commons) {
 			data[key] = commons[key];
