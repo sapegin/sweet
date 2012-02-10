@@ -1,0 +1,41 @@
+{
+	"content_dir": "content",
+	"publish_dir": "htdocs",
+	"templates_dir": "templates",
+	"default_template_id": "page",
+	"langs": ["ru", "en"],
+	"url_prefixes": {
+		"ru": "http://sapegin.ru/",
+		"en": "http://sapegin.me/"
+	},
+	"uri_prefixes": {
+		"ru": "/",
+		"en": "/"
+	},
+
+	"stylesheets_dir": "styles",
+	"stylesheets": [
+		{
+			"in": "styles/index.styl",
+			"out": "htdocs/styles/s.css"
+		}
+	],
+
+	"javascripts": [
+		{
+			"in": [
+				"js/test1.js",
+				"js/test2.js",
+				"js/test3.js"
+			],
+			"out": "js/test.min.js"
+		}
+	],
+
+	"files": {
+		"css": {
+			"path": "htdocs/styles/s.css",
+			"href": "../styles/s.css?{version}"
+		}
+	}
+}

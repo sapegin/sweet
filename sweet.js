@@ -23,10 +23,10 @@ var fs = require('fs'),
 
 // Config
 try {
-	var o = require(path.join(process.cwd(), 'sweet-config.js'));
+	var o = JSON.parse(readUtfFile(path.join(process.cwd(), 'sweet-config.json')));
 }
-catch (e) {
-	error('Cannot open configuration file sweet-config.js.');
+catch (err) {
+	error('Cannot open configuration file sweet-config.json.\n' + err);
 }
 
 init();
@@ -78,21 +78,50 @@ if (isBuild) build();
 
 
 function init() {
-	['CONTENT_DIR', 'PUBLISH_DIR', 'TEMPLATES_DIR'].forEach(function(key) {
-		checkConfigVariable(key);
-		normalizeConfigPath(key);
+	// Check required options
+	if (o.content_dir) {
+		['publish_dir', 'templates_dir', 'default_template_id'].forEach(requireConfigVariable);
+	}
+
+	// Normalize all paths + some other checks
+	['content_dir', 'publish_dir', 'templates_dir', 'stylesheets_dir'].forEach(normalizeConfigPath);
+
+	['stylesheets', 'javascripts'].forEach(function(key) {
+		if (o[key]) o[key].forEach(function(group, idx) {
+			if (!group.in) error('Required config variable ' + key + '.' + idx + '.in not found.');
+			if (!group.out) error('Required config variable ' + key + '.' + idx + '.out not found.');
+			if (typeof group.in === 'object') {
+				for (var idx in group.in) {
+					group.in[idx] = normalizePath(group.in[idx]);
+				}
+			}
+			else {
+				group.in = normalizePath(group.in);
+			}
+			group.out = normalizePath(group.out);
+		});
 	});
-	['DEFAULT_TEMPLATE_ID', 'URL_PREFIXES', 'URI_PREFIXES'].forEach(function(key) {
-		checkConfigVariable(key);
-	});
+
+	if (o.files) {
+		for (var key in o.files) {
+			if (!o.files[key].path) error('Required config variable files.' + key + '.path not found.');
+			if (!o.files[key].href) error('Required config variable files.' + key + '.href not found.');
+			o.files[key].path = normalizePath(o.files[key].path);
+		};
+	}
 }
 
-function checkConfigVariable(key) {
+function requireConfigVariable(key) {
 	if (!o[key]) error('Required config variable ' + key + ' not found.');
 }
 
 function normalizeConfigPath(key) {
-	o[key] = path.normalize(o[key]);
+	if (!o[key]) return;
+	o[key] = normalizePath(o[key]);
+}
+
+function normalizePath(filepath) {
+	return path.join(process.cwd(), filepath);
 }
 
 function build(recompile) {
@@ -103,12 +132,12 @@ function build(recompile) {
 		templates = {},
 		versions = {};
 
-	var files = getFilesList(o.CONTENT_DIR);
+	var files = getFilesList(o.content_dir);
 	for (var fileIdx = 0; fileIdx < files.length; fileIdx++) {
 		var srcPath = files[fileIdx],
 			lang = getFileLanguage(srcPath),
 			fileId = lang + '/' + getFileSignificantPath(srcPath);
-			resultPath = path.join(o.PUBLISH_DIR, fileId + '.html');
+			resultPath = path.join(o.publish_dir, fileId + '.html');
 
 		// Read contents
 		var data = getContent(srcPath);
@@ -132,7 +161,7 @@ function build(recompile) {
 			}
 		}
 		else {
-			data.template = o.DEFAULT_TEMPLATE_ID;
+			data.template = o.default_template_id;
 		}
 
 		// Additional data
@@ -146,18 +175,18 @@ function build(recompile) {
 	}
 
 	// File versions
-	if (o.FILES) {
-		for (var id in o.FILES) {
-			var file = o.FILES[id];
-			if (!path.existsSync(file[0])) {
-				error('Versioned file ' + file[0] + ' not found');
+	if (o.files) {
+		for (var id in o.files) {
+			var file = o.files[id];
+			if (!path.existsSync(file.path)) {
+				error('Versioned file ' + file.path + ' not found');
 			}
-			versions[id] = file[1].replace('{version}', fs.statSync(file.path).mtime.getTime());
+			versions[id] = file.href.replace('{version}', fs.statSync(file.path).mtime.getTime());
 		}
 	}
 
 	if (recompile) {
-		templates[o.DEFAULT_TEMPLATE_ID] = true;
+		templates[o.default_template_id] = true;
 	}
 	compileTemplates(templates);
 	generateFiles(datasets, sitemap, commons, versions);
@@ -170,7 +199,7 @@ function watch() {
 }
 
 function serve(lang, port) {
-	if (!lang && o.LANGS.length) lang = o.LANGS[0];
+	if (!lang && o.langs.length) lang = o.langs[0];
 	if (!port) port = 8000;
 	var mimeTypes = {
 		'default': 'text/plain',
@@ -185,10 +214,10 @@ function serve(lang, port) {
 		var uri = url.parse(req.url).pathname,
 			filename;
 		if (lang && uri.indexOf('.') === -1) {  // Page
-			filename = path.join(o.PUBLISH_DIR, lang, (uri === '/' ? '/index' : uri) + '.html');
+			filename = path.join(o.publish_dir, lang, (uri === '/' ? '/index' : uri) + '.html');
 		}
 		else {  // File
-			filename = path.join(o.PUBLISH_DIR, uri);
+			filename = path.join(o.publish_dir, uri);
 		}
 
 		path.exists(filename, function(exists) {
@@ -226,24 +255,24 @@ function serve(lang, port) {
 
 function watchTemplatesAndContent() {
 	build();
-	watchFolder(o.CONTENT_DIR, function() {
+	watchFolder(o.content_dir, function() {
 		build(false);
 	});
-	watchFolder(o.TEMPLATES_DIR, build);
+	watchFolder(o.templates_dir, build);
 }
 
 function watchStylesheets() {
-	if (!o.STYLESHEETS || !o.STYLESHEETS_DIR) {
+	if (!o.stylesheets || !o.stylesheets_dir) {
 		return;
 	}
 
 	// Create CSS files first time
-	for (var ssIdx = 0; ssIdx < o.STYLESHEETS.length; ssIdx++) {
-		var ss = o.STYLESHEETS[ssIdx];
-		stylusBuild(ss[0], ss[1]);
+	for (var ssIdx = 0; ssIdx < o.stylesheets.length; ssIdx++) {
+		var ss = o.stylesheets[ssIdx];
+		stylusBuild(ss.in, ss.out);
 	}
 
-	watchFolder(o.STYLESHEETS_DIR, updateStylesheets);
+	watchFolder(o.stylesheets_dir, updateStylesheets);
 }
 
 function watchFolder(dir, callback) {
@@ -264,9 +293,9 @@ function watchFolder(dir, callback) {
 }
 
 function updateStylesheets() {
-	for (var ssIdx = 0; ssIdx < o.STYLESHEETS.length; ssIdx++) {
-		var ss = o.STYLESHEETS[ssIdx];
-		stylusBuild(ss[0], ss[1]);
+	for (var ssIdx = 0; ssIdx < o.stylesheets.length; ssIdx++) {
+		var ss = o.stylesheets[ssIdx];
+		stylusBuild(ss.in, ss.out);
 	}
 }
 
@@ -282,7 +311,7 @@ function getSitemapData(data) {
 
 function compileTemplates(templates) {
 	for (var templateId in templates) {
-		var templatePath = path.join(o.TEMPLATES_DIR, templateId + '.xhtml');
+		var templatePath = path.join(o.templates_dir, templateId + '.xhtml');
 		if (!path.existsSync(templatePath)) {
 			error('Template file ' + templatePath + ' not found.');
 			return;
@@ -297,11 +326,11 @@ function toUnixPath(filepath) {
 }
 
 function fileToUrl(filepath) {
-	return o.URL_PREFIXES[getFileLanguage(filepath)] + getFileUriPart(filepath);
+	return o.url_prefixes[getFileLanguage(filepath)] + getFileUriPart(filepath);
 }
 
 function fileToUri(filepath) {
-	return o.URI_PREFIXES[getFileLanguage(filepath)] + getFileUriPart(filepath);
+	return o.uri_prefixes[getFileLanguage(filepath)] + getFileUriPart(filepath);
 }
 
 function getFileUriPart(filepath) {
@@ -310,18 +339,18 @@ function getFileUriPart(filepath) {
 
 function getFileSignificantPath(filepath) {
 	var basename = path.basename(filepath).replace(path.extname(filepath), '');
-	filepath = filepath.replace(path.join(o.CONTENT_DIR, getFileLanguage(filepath)), '');
+	filepath = filepath.replace(path.join(o.content_dir, getFileLanguage(filepath)), '');
 	filepath = filepath.slice(1);
 	filepath = path.dirname(filepath);
 	return toUnixPath(path.join(filepath, basename));
 }
 
 function getFileLanguage(filepath) {
-	if (!o.LANGS) return null;
-	var relative = filepath.replace(o.CONTENT_DIR, '');
+	if (!o.langs) return null;
+	var relative = filepath.replace(o.content_dir, '');
 	if (!relative) return null;
 	var lang = relative.slice(1, 3);
-	if (o.LANGS.indexOf(lang) === -1) return null;
+	if (o.langs.indexOf(lang) === -1) return null;
 	return lang;
 }
 
@@ -338,7 +367,7 @@ function generateFiles(filesData, sitemap, commons, versions) {
 		}
 
 		transform(data.template, data, function(result) {
-			var resultPath = path.join(o.PUBLISH_DIR, fileId + '.html');
+			var resultPath = path.join(o.publish_dir, fileId + '.html');
 			mkdirSyncRecursive(path.dirname(resultPath));
 			fs.writeFile(resultPath, result, function(err) {
 				if (err) {
