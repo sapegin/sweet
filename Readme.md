@@ -3,7 +3,7 @@
 Sweet is a very simple static websites generator powered by Node.js. Contains template engine, JavaScript concatenator/minificator and Stylus support. (You can use only those parts you need.)
 
 
-### Features
+## Features
 
   - Content in JSON or HTML
   - [Fest templates](https://github.com/mailru/fest)
@@ -21,12 +21,12 @@ $ npm install swe -g
 ```
 
 
-### Example
+## Example
 
 See `example` folder.
 
 
-### Command line switches
+## Command line switches
 
 `swe`
 
