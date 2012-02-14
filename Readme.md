@@ -29,7 +29,8 @@ Go to `example` folder, type `swe -p` and point your browser to http://127.0.0.1
 ## Command line switches
 
 ```bash
-$ swe`
+$ swe
+```
 
 Build website.
 
