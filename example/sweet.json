@@ -1,0 +1,6 @@
+{
+	"content_dir": "content",
+	"publish_dir": "htdocs",
+	"templates_dir": "templates",
+	"default_template_id": "page"
+}

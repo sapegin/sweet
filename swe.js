@@ -20,15 +20,15 @@ var fs = require('fs'),
 	jsp = require('uglify-js').parser,
 	pro = require('uglify-js').uglify,
 	colors = require('colors'),
-	treewatcher = require('treewatcher');
+	treewatcher = require('tree-watcher');
 
 
 // Config
 try {
-	var o = JSON.parse(readUtfFile(path.join(process.cwd(), 'sweet-config.json')));
+	var o = JSON.parse(readUtfFile(path.join(process.cwd(), 'sweet.json')));
 }
 catch (err) {
-	error('Cannot open configuration file sweet-config.json.\n' + err);
+	error('Cannot open configuration file sweet.json.\n' + err);
 }
 
 init();
@@ -144,7 +144,7 @@ function buildContent(recompile) {
 	for (var fileIdx = 0; fileIdx < files.length; fileIdx++) {
 		var srcPath = files[fileIdx],
 			lang = getFileLanguage(srcPath),
-			fileId = lang + '/' + getFileSignificantPath(srcPath);
+			fileId = (lang ? lang + '/' : '') + getFileSignificantPath(srcPath);
 			resultPath = path.join(o.publish_dir, fileId + '.html');
 
 		// Read contents
@@ -224,7 +224,7 @@ function watch() {
 }
 
 function serve(lang, port) {
-	if (!lang && o.langs.length) lang = o.langs[0];
+	if (!lang && o.langs && o.langs.length) lang = o.langs[0];
 	if (!port) port = 8000;
 	var mimeTypes = {
 		'default': 'text/plain',
@@ -238,7 +238,7 @@ function serve(lang, port) {
 	var server = http.createServer(function(req, res) {
 		var uri = url.parse(req.url).pathname,
 			filename;
-		if (lang && uri.indexOf('.') === -1) {  // Page
+		if (uri.indexOf('.') === -1) {  // Page
 			filename = path.join(o.publish_dir, lang, (uri === '/' ? '/index' : uri) + '.html');
 		}
 		else {  // File
@@ -323,6 +323,8 @@ function buildStylesheets() {
 }
 
 function combineJavaScript() {
+	if (!o.javascripts) return;
+
 	for (var groupIdx = 0; groupIdx < o.javascripts.length; groupIdx++) {
 		var group = o.javascripts[groupIdx];
 		combine({
@@ -409,11 +411,23 @@ function toUnixPath(filepath) {
 }
 
 function fileToUrl(filepath) {
-	return o.url_prefixes[getFileLanguage(filepath)] + getFileUriPart(filepath);
+	var url = getFileUriPart(filepath);
+	if (o.url_prefixes) {
+		return o.url_prefixes[getFileLanguage(filepath)] + url;
+	}
+	else {
+		return url;
+	}
 }
 
 function fileToUri(filepath) {
-	return o.uri_prefixes[getFileLanguage(filepath)] + getFileUriPart(filepath);
+	var uri = getFileUriPart(filepath);
+	if (o.uri_prefixes) {
+		return o.uri_prefixes[getFileLanguage(filepath)] + uri;
+	}
+	else {
+		return uri;
+	}
 }
 
 function getFileUriPart(filepath) {

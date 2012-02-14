@@ -1,0 +1,24 @@
+<f:template xmlns:f="http://fest.mail.ru">
+	<f:doctype>html</f:doctype>
+	<html>
+		<head>
+			<meta charset="utf8"/>
+			<title><f:get name="title"/></title>
+			<f:set name="title">
+				<f:value>$.title</f:value>
+			</f:set>
+		</head>
+		<body>
+			<header>
+				<h1>Sweet Demo Site</h1>
+			</header>
+			<div class="content">
+				<f:get name="content"/>
+			</div>
+			<footer>
+				<f:text value="© Artem Sapegin, 2011—"/>
+				<f:value>(new Date).getFullYear()</f:value>
+			</footer>
+		</body>
+	</html>
+</f:template>

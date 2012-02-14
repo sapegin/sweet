@@ -1,23 +1,24 @@
 {
-  "author": "Artem Sapegin <artem@sapegin.ru> (http://sapegin.ru)",
-  "name": "sweet",
-  "description": "Simplest Web Engine Ever, The",
-  "version": "0.3.2",
+  "name": "swe",
+  "description": "Sweet: Simplest Web Engine Ever, The",
+  "author": "Artem Sapegin <artem@sapegin.ru> (http://sapegin.me)",
+  "version": "0.4.0",
   "repository": {
     "type": "git",
     "url": "git@github.com:sapegin/sweet.git"
   },
-  "main": "./sweet.js",
-  "bin": "./sweet.js",
+  "main": "./swe.js",
+  "bin": "./swe.js",
   "engines": {
-    "node": ">0.6.x"
+    "node": "0.6.x"
   },
   "dependencies": {
-  	"fest": "git://github.com/AndrewSumin/Fest.git#master",
-  	"treewatcher": "git://github.com/daanlib/tree-watcher.git#master",
-    "stylus": "*",
-    "optparse": "*",
-    "colors": "*"
+  	"fest": "git://github.com/mailru/fest.git#master",
+    "stylus": "0.23.x",
+	"uglify-js": "1.2.x",
+    "optparse": "1.0.x",
+  	"tree-watcher": "0.2.x",
+    "colors": "0.6.x"
   },
   "devDependencies": {}
 }
