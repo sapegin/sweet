@@ -1,6 +1,6 @@
 # Sweet: Simplest Web Engine Ever, The
 
-Sweet is a very simple static websites generator powered by Node.js. Contains template engine, JavaScript concatenator/minificator and Stylus support. (You can use only those parts you need.)
+Sweet is a very simple static websites generator powered by Node.js. Contains template engine, JavaScript concatenator/minificator and Stylus support. (You can use only parts you need.)
 
 
 ## Features
@@ -10,8 +10,8 @@ Sweet is a very simple static websites generator powered by Node.js. Contains te
   - JavaScript concatenator/minificator (uses [UglifyJS](https://github.com/mishoo/UglifyJS))
   - [Stylus](https://github.com/LearnBoost/stylus) support (plain CSS not supported yet)
   - Embedded web server
-  - Multi-language
-  - Watch for changes in content, templates and styles
+  - Content in multiple languages
+  - Automatic rebuild when content, templates or styles changed
 
 
 ## Installation
@@ -23,33 +23,34 @@ $ npm install swe -g
 
 ## Example
 
-See `example` folder.
+Go to `example` folder, type `swe -p` and point your browser to http://127.0.0.1:8000/. Now you can edit any file and press F5 to see your changes.
 
 
 ## Command line switches
 
-`swe`
+```bash
+$ swe`
 
 Build website.
 
-`swe -d`
+`-d` or `--debug`
 
 Debug mode. You can test for `$.debug` in your templates.
 
-`swe -w`
+`-w` or `--watch`
 
 Watch mode. Will rebuild website on any change in content, templates or styles.
 
-`swe -s`
+`-s` or `--serve`
 
 Build and serve your website to localhost.
 
-`swe -p`
+`-p` or `--preview`
 
 Serve & watch & debug. The most convenient mode for development.
 
 
-### Configuration
+## Configuration
 
 Place `sweet.json` to your project’s root directory.
 
