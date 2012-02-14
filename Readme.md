@@ -57,6 +57,8 @@ Place `sweet.json` to your project’s root directory.
 ...Coming soon...
 
 
+---
+
 ## License 
 
 (The MIT License)
