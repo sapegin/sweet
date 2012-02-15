@@ -133,6 +133,8 @@ function build() {
 }
 
 function buildContent(recompile) {
+	if (!o.content_dir) return;
+
 	var recompile = recompile !== false,
 		datasets = {},
 		sitemap = {},
