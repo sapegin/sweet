@@ -13,7 +13,6 @@
 		"en": "/"
 	},
 
-	"stylesheets_dir": "styles",
 	"stylesheets": [
 		{
 			"in": "styles/index.styl",

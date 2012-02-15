@@ -86,7 +86,7 @@ function init() {
 	}
 
 	// Normalize all paths + some other checks
-	['content_dir', 'publish_dir', 'templates_dir', 'stylesheets_dir'].forEach(normalizeConfigPath);
+	['content_dir', 'publish_dir', 'templates_dir'].forEach(normalizeConfigPath);
 
 	['stylesheets', 'javascripts'].forEach(function(key) {
 		if (o[key]) o[key].forEach(function(group, idx) {
@@ -289,13 +289,14 @@ function watchTemplatesAndContent() {
 }
 
 function watchStylesheets() {
-	if (!o.stylesheets || !o.stylesheets_dir) {
+	if (!o.stylesheets) {
 		return;
 	}
 
 	buildStylesheets();
 
-	watchFolder(o.stylesheets_dir, buildStylesheets);
+	var stylesheetsDir = path.dirname(o.stylesheets[0].in);
+	watchFolder(stylesheetsDir, buildStylesheets);
 }
 
 function watchFolder(dir, callback) {
