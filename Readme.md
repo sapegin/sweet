@@ -70,7 +70,7 @@ But it is of course useless :) You should add any of the following groups of opt
 
 Required options are:
 
-```
+```json
 "content_dir": "content",
 "templates_dir": "templates",
 "default_template_id": "page",
