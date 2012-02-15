@@ -5,13 +5,14 @@ Sweet is a very simple static websites generator powered by Node.js. Contains te
 
 ## Features
 
-  - Content in JSON or HTML
+  - JSON or HTML content
   - [Fest templates](https://github.com/mailru/fest)
-  - JavaScript concatenator/minificator (uses [UglifyJS](https://github.com/mishoo/UglifyJS))
+  - JavaScript concatenation and minification (uses [UglifyJS](https://github.com/mishoo/UglifyJS))
   - [Stylus](https://github.com/LearnBoost/stylus) support (plain CSS not supported yet)
   - Embedded web server
-  - Content in multiple languages
-  - Automatic rebuild when content, templates or styles changed
+  - Multilingual content
+  - Automatic rebuilding when content, templates or styles are changed
+  - Versioned files (to flush browser cache)
 
 
 ## Installation
@@ -23,16 +24,16 @@ $ npm install swe -g
 
 ## Example
 
-Go to `example` folder, type `swe -p` and point your browser to http://127.0.0.1:8000/. Now you can edit any file and press F5 to see your changes.
+Go to `example` folder, type `swe -p` and point your browser to http://127.0.0.1:8000/. Now you can edit any file and press F5 to see changes you made.
 
 
 ## Command line switches
 
 ```bash
-$ swe
+$ sweit
 ```
 
-Build website.
+Builds website.
 
 `-d` or `--debug`
 
@@ -44,19 +45,114 @@ Watch mode. Will rebuild website on any change in content, templates or styles.
 
 `-s` or `--serve`
 
-Build and serve your website to localhost.
+Builds and serves your website to localhost.
 
 `-p` or `--preview`
 
-Serve & watch & debug. The most convenient mode for development.
+`--serve` + `--watch` + `--debug`—the most convenient mode for development.
 
 
 ## Configuration
 
 Place `sweet.json` to your project’s root directory.
 
-...Coming soon...
+The only required option is `publish_dir`—it is where your generated files will be placed. So minimal config is:
 
+```json
+{
+	"publish_dir": "htdocs"
+}
+```
+
+But it is of course useless :) You should add any of the following groups of options.
+
+### Templates
+
+Required options are:
+
+```
+"content_dir": "content",
+"templates_dir": "templates",
+"default_template_id": "page",
+```
+
+See *Working with templates* section below.
+
+If your site is multilingual add this options:
+
+```json
+"langs": ["ru", "en"],
+"url_prefixes": {
+	"ru": "http://sapegin.ru/",
+	"en": "http://sapegin.me/"
+},
+"uri_prefixes": {
+	"ru": "/",
+	"en": "/"
+},
+```
+
+### JavaScript Files
+
+To concatenate and minify some JavaScript:
+
+```json
+"javascripts": [
+	{
+		"in": [
+			"js/test1.js",
+			"js/test2.js",
+			"js/test3.js"
+		],
+		"out": "js/test.min.js"
+	}
+],
+```
+
+### Versioned files
+
+```json
+"files": {
+	"css": {
+		"path": "htdocs/styles/s.css",
+		"href": "../styles/s.css?{version}"
+	}
+}
+```
+
+### Stylus 
+
+```json
+"stylesheets": [
+	{
+		"in": "styles/index.styl",
+		"out": "htdocs/styles/s.css"
+	}
+],
+```
+
+## Working with templates
+
+Sweet uses Fest templating engine (born in Mail.ru). See docs (in Russian) in official repo or examples here.
+
+### Content files
+
+Content can be both JSON or HTML. HTML files look like this:
+
+```html
+title: Page title
+template: index
+var1: any value
+var2: another value
+
+---
+
+<p>Any HTML here.</p>
+```
+
+Only `title` is required. After `\n---\n` you can place any HTML and then use it in your templates as `$.content`. Add `template` to specify template (or `default_template_id` will be used).
+
+Additionally you can add any options you want. For example, `var1` will be `$.var1` in your templates.
 
 ---
 
