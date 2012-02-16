@@ -166,7 +166,7 @@ JSON content is almost the same:
 ```json
 {
 	"title": "Page title",
-	"template: index,
+	"template": "index",
 	"var1": "any value",
 	"var2": ["You", "can", "use", "all", "JSON", "power."]
 }
@@ -174,7 +174,7 @@ JSON content is almost the same:
 
 ### Template context
 
-Sweet provides few useful template variables.
+In addition to your own variables (see above) Sweet provides few useful template variables.
 
 `$.debug`
 
