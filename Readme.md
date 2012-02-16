@@ -68,13 +68,17 @@ But it is of course useless :) You should add any of the following groups of opt
 
 ### Templates
 
-Required options are:
+Available options are:
 
 ```json
 "content_dir": "content",
 "templates_dir": "templates",
 "default_template_id": "page",
+"url_prefixes": "/",
+"uri_prefixes": "/"
 ```
+
+`content_dir`, `templates_dir` and `default_template_id` are required.
 
 See *Working with templates* section below.
 
@@ -131,9 +135,12 @@ To concatenate and minify some JavaScript:
 ],
 ```
 
-## Working with templates
+*Note:* All Stylus stylesheets should be inside single directory.
 
-Sweet uses Fest templating engine (born in Mail.ru). See docs (in Russian) in official repo or examples here.
+
+## Using templates
+
+Sweet uses Fest templating engine (born at Mail.ru). See [docs](https://github.com/mailru/fest) (in Russian) in official repo or examples here.
 
 ### Content files
 
@@ -153,6 +160,102 @@ var2: another value
 Only `title` is required. After `\n---\n` you can place any HTML and then use it in your templates as `$.content`. Add `template` to specify template (or `default_template_id` will be used).
 
 Additionally you can add any options you want. For example, `var1` will be `$.var1` in your templates.
+
+JSON content is almost the same:
+
+```json
+{
+	"title": "Page title",
+	"template: index,
+	"var1": "any value",
+	"var2": ["You", "can", "use", "all", "JSON", "power."]
+}
+```
+
+### Template context
+
+Sweet provides few useful template variables.
+
+`$.debug`
+
+True if debug mode is enabled (see `--debug` command line switch above).
+
+`$.content`
+
+Content of a page. See section *Content files* above.
+
+`$.lang`
+
+Language code (from `langs` config option).
+
+`$.path`
+
+Path of content file inside `content_dir` and without extension.
+
+`$.uri` and `$.url`
+
+URL and URI of a page: `uri_prefixes`/`url_prefixes` + `$.lang` + `$.path`.
+
+`$.map`
+
+Sitemap. Contexts of all pages (without `content`):
+
+```json
+{
+	"index": {
+		"title": "Home page",
+		"path": "index",
+		"uri": "/",
+		...
+	},
+	"about": {
+		"title": "About Us",
+		"path": "about",
+		"uri": "/about",
+		...
+	}	
+}
+```
+
+`$.files`
+
+Versioned files hash:
+
+```json
+{
+	"css": "../styles/s.css?1329399548706"
+}
+```
+
+`$.javascripts` (available only in debug mode)
+
+JavaScript source files list.
+
+
+### Common data
+
+Any “hidden” JSON file (name begins with “.”) in `content_dir` interprets as file with common data.
+
+For example `.common.json` with this contents:
+
+```json
+{
+	"sitename": "Sweet Demo Site",
+	"menu": [
+		{
+			"title": "Home",
+			"href": "/"
+		},
+		{
+			"title": "About",
+			"href": "/about"
+		}
+	]
+}
+```
+
+will be acessible via `$.common` context variable.
+
 
 ---
 
