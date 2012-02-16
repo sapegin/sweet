@@ -15,17 +15,19 @@
 					<f:foreach iterate="$.common.menu" index="idx">
 						<f:script>$.item = $.common.menu[idx]</f:script>
 						<li>
-							<f:attributes>
-								<f:if test="$.uri.indexOf($.item.href) !== -1">
-									<f:attribute name="class">active</f:attribute>
-								</f:if>
-							</f:attributes>
-							<a>
-								<f:attributes>
-									<f:attribute name="href"><f:value>$.item.href</f:value></f:attribute>
-								</f:attributes>
-								<f:value>$.item.title</f:value>
-							</a>
+							<f:choose>
+								<f:when test="$.uri == $.item.href">
+									<b><f:value>$.item.title</f:value></b>
+								</f:when>
+								<f:otherwise>
+									<a>
+										<f:attributes>
+											<f:attribute name="href"><f:value>$.item.href</f:value></f:attribute>
+										</f:attributes>
+										<f:value>$.item.title</f:value>
+									</a>								
+								</f:otherwise>
+							</f:choose>
 						</li>
 					</f:foreach>
 				</ul>
