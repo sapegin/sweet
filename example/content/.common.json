@@ -1,0 +1,13 @@
+{
+	"sitename": "Sweet Demo Site",
+	"menu": [
+		{
+			"title": "Home",
+			"href": "/"
+		},
+		{
+			"title": "About",
+			"href": "/about"
+		}
+	]
+}

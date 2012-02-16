@@ -10,10 +10,38 @@
 		</head>
 		<body>
 			<header>
-				<h1>Sweet Demo Site</h1>
+				<h1><f:value>$.common.sitename</f:value></h1>
+				<ul>
+					<f:foreach iterate="$.common.menu" index="idx">
+						<f:script>$.item = $.common.menu[idx]</f:script>
+						<li>
+							<f:attributes>
+								<f:if test="$.uri.indexOf($.item.href) !== -1">
+									<f:attribute name="class">active</f:attribute>
+								</f:if>
+							</f:attributes>
+							<a>
+								<f:attributes>
+									<f:attribute name="href"><f:value>$.item.href</f:value></f:attribute>
+								</f:attributes>
+								<f:value>$.item.title</f:value>
+							</a>
+						</li>
+					</f:foreach>
+				</ul>
 			</header>
 			<div class="content">
 				<f:get name="content"/>
+			</div>
+			<div>
+				<h2>Context variables</h2>
+				<f:script>$.vars = ['debug', 'title', 'path', 'uri', 'url']</f:script>
+				<f:for iterate="$.vars" index="idx">
+					<f:script>$.key = $.vars[idx]</f:script>
+					<f:value>$.key</f:value>
+					<f:text value=" = "/>
+					<f:value>$[$.key]</f:value><br/>
+				</f:for>
 			</div>
 			<footer>
 				<f:text value="© Artem Sapegin, 2011—"/>
