@@ -12,7 +12,7 @@ Sweet is a very simple static websites generator powered by Node.js. Contains te
   - Embedded web server
   - Multilingual content
   - Automatic rebuilding when content, templates or styles are changed
-  - Versioned files (to flush browser cache)
+  - Versioned files (adds timestamp to file url to flush browser cache)
 
 
 ## Installation
@@ -213,7 +213,8 @@ Sitemap. Contexts of all pages (without `content`):
 		"path": "about",
 		"uri": "/about",
 		...
-	}	
+	},
+	...
 }
 ```
 
