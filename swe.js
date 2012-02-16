@@ -416,7 +416,12 @@ function toUnixPath(filepath) {
 function fileToUrl(filepath) {
 	var url = getFileUriPart(filepath);
 	if (o.url_prefixes) {
-		return o.url_prefixes[getFileLanguage(filepath)] + url;
+		if (o.langs) {
+			return o.url_prefixes[getFileLanguage(filepath)] + url;
+		}
+		else {
+			return o.url_prefixes[0] + url;
+		}
 	}
 	else {
 		return url;
@@ -426,7 +431,12 @@ function fileToUrl(filepath) {
 function fileToUri(filepath) {
 	var uri = getFileUriPart(filepath);
 	if (o.uri_prefixes) {
-		return o.uri_prefixes[getFileLanguage(filepath)] + uri;
+		if (o.langs) {
+			return o.uri_prefixes[getFileLanguage(filepath)] + uri;
+		}
+		else {
+			return o.uri_prefixes[0] + uri;
+		}
 	}
 	else {
 		return uri;
