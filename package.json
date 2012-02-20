@@ -20,5 +20,8 @@
   	"tree-watcher": "0.2.x",
     "colors": "0.6.x"
   },
-  "devDependencies": {}
+  "devDependencies": {},
+  "scripts": {
+	"lint": "jshint swe.js"
+  }
 }

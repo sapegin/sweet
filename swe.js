@@ -89,12 +89,12 @@ function init() {
 	['content_dir', 'publish_dir', 'templates_dir'].forEach(normalizeConfigPath);
 
 	['stylesheets', 'javascripts'].forEach(function(key) {
-		if (o[key]) o[key].forEach(function(group, idx) {
-			if (!group.in) error('Required config variable ' + key + '.' + idx + '.in not found.');
-			if (!group.out) error('Required config variable ' + key + '.' + idx + '.out not found.');
+		if (o[key]) o[key].forEach(function(group, groupIdx) {
+			if (!group.in) error('Required config variable ' + key + '.' + groupIdx + '.in not found.');
+			if (!group.out) error('Required config variable ' + key + '.' + groupIdx + '.out not found.');
 			if (typeof group.in === 'object') {
-				for (var idx in group.in) {
-					group.in[idx] = normalizePath(group.in[idx]);
+				for (var inIdx in group.in) {
+					group.in[inIdx] = normalizePath(group.in[inIdx]);
 				}
 			}
 			else {
@@ -109,7 +109,7 @@ function init() {
 			if (!o.files[key].path) error('Required config variable files.' + key + '.path not found.');
 			if (!o.files[key].href) error('Required config variable files.' + key + '.href not found.');
 			o.files[key].path = normalizePath(o.files[key].path);
-		};
+		}
 	}
 }
 
@@ -135,16 +135,16 @@ function build() {
 function buildContent(recompile) {
 	if (!o.content_dir) return;
 
-	var recompile = recompile !== false,
-		datasets = {},
+	recompile = recompile !== false;
+	var datasets = {},
 		sitemap = {},
 		commons = {},
 		templates = {},
 		versions = {};
 
-	var files = getFilesList(o.content_dir);
-	for (var fileIdx = 0; fileIdx < files.length; fileIdx++) {
-		var srcPath = files[fileIdx],
+	var contentFiles = getFilesList(o.content_dir);
+	for (var contentIdx = 0, contentCnt = contentFiles.length; contentIdx < contentCnt; contentIdx++) {
+		var srcPath = contentFiles[contentIdx],
 			lang = getFileLanguage(srcPath),
 			fileId = (lang ? lang + '/' : '') + getFileSignificantPath(srcPath);
 			resultPath = path.join(o.publish_dir, fileId + '.html');
@@ -200,8 +200,8 @@ function buildContent(recompile) {
 	if (isDebug && o.javascripts) {
 		for (var groupIdx = 0; groupIdx < o.javascripts.length; groupIdx++) {
 			var group = o.javascripts[groupIdx];
-			for (var fileIdx = 0, filesCnt = group.in.length; fileIdx < filesCnt; fileIdx++) {
-				javascripts.push(toUnixPath(group.in[fileIdx].replace(o.publish_dir, '')));
+			for (var jsIdx = 0; jsIdx < group.in.length; jsIdx++) {
+				javascripts.push(toUnixPath(group.in[jsIdx].replace(o.publish_dir, '')));
 			}
 		}
 	}
@@ -311,7 +311,7 @@ function watchFolder(dir, callback) {
 
 	watcher.watch(dir, function(err, watcher) {
 		if (err) {
-			error('Cannnot watch ' + dir)
+			error('Cannnot watch ' + dir);
 		}
 	});
 }
@@ -334,17 +334,21 @@ function combineJavaScript() {
 			in: group.in,
 			out: group.out,
 			glue: ';',
-			filePreprocessor: function(contents) {
-				return contents.replace(/^;+|;+$/g, '');
-			},
-			postprocessor: function(contents) {
-				var ast = jsp.parse(contents);  // Parse code and get the initial AST
-				ast = pro.ast_mangle(ast);  // Get a new AST with mangled names
-				ast = pro.ast_squeeze(ast);  // Get an AST with compression optimizations
-				return pro.gen_code(ast);
-			}
+			filePreprocessor: combineJavaScriptPreprocess,
+			postprocessor: combineJavaScriptPostprocess
 		});
 	}
+}
+
+function combineJavaScriptPreprocess(contents) {
+	return contents.replace(/^;+|;+$/g, '');
+}
+
+function combineJavaScriptPostprocess(contents) {
+	var ast = jsp.parse(contents);  // Parse code and get the initial AST
+	ast = pro.ast_mangle(ast);  // Get a new AST with mangled names
+	ast = pro.ast_squeeze(ast);  // Get an AST with compression optimizations
+	return pro.gen_code(ast);
 }
 
 function combine(options) {
@@ -472,27 +476,29 @@ function generateFiles(data) {
 		javascripts = data.javascripts;
 		
 	for (var fileId in datasets) {
-		var data = datasets[fileId];
+		var dataset = datasets[fileId];
 
 		// Special data
-		data.map = sitemap;
-		data.files = versions;
-		data.javascripts = javascripts;
-		data.debug = isDebug;
+		dataset.map = sitemap;
+		dataset.files = versions;
+		dataset.javascripts = javascripts;
+		dataset.debug = isDebug;
 		for (var key in commons) {
-			data[key] = commons[key];
+			dataset[key] = commons[key];
 		}
 
-		transform(data.template, data, function(result) {
-			var resultPath = path.join(o.publish_dir, fileId + '.html');
-			mkdirSyncRecursive(path.dirname(resultPath));
-			fs.writeFile(resultPath, result, function(err) {
-				if (err) {
-					error('Cannot write file ' + resultPath + '.');
-				}
-			});
-		});
+		transform(dataset.template, fileId, dataset, saveContentFile);
 	}
+}
+
+function saveContentFile(result, fileId) {
+	var resultPath = path.join(o.publish_dir, fileId + '.html');
+	mkdirSyncRecursive(path.dirname(resultPath));
+	fs.writeFile(resultPath, result, function(err) {
+		if (err) {
+			error('Cannot write file ' + resultPath + '.');
+		}
+	});
 }
 
 function getContent(file) {
@@ -551,12 +557,11 @@ function readJsonFile(filepath) {
 	if (!data) return {};
 
 	try {
-		var json = JSON.parse(data);
+		return JSON.parse(data);
 	}
 	catch (e) {
-		error('Cannot parse JSON file ' + filepath + '.');
+		error('Cannot parse JSON file ' + filepath + '.\n' + e);
 	}
-	return json;
 }
 
 function readUtfFile(filepath) {
@@ -569,12 +574,12 @@ function error(message) {
 	process.exit(1);
 }
 
-function transform(templateId, json, callback) {
+function transform(templateId, fileId, json, callback) {
 	var template = compiledTemplates[templateId];
 	if (!template) {
 		error('Template ' + templateId + ' is not invokable.');
 	}
-	callback(template(json));
+	callback(template(json), fileId);
 }
 
 // https://github.com/ryanmcgrath/wrench-js/blob/master/lib/wrench.js
