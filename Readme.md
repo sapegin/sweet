@@ -135,7 +135,7 @@ To concatenate and minify some JavaScript:
 ],
 ```
 
-*Note:* All Stylus stylesheets should be inside single directory.
+*Note:* All Stylus stylesheets should be in the same directory.
 
 
 ## Using templates
@@ -174,7 +174,7 @@ JSON content is almost the same:
 
 ### Template context
 
-In addition to your own variables (see above) Sweet provides few useful template variables.
+In addition to your own variables (see above) Sweet provides some useful template variables.
 
 `$.debug`
 
@@ -255,7 +255,7 @@ For example `.common.json` with this contents:
 }
 ```
 
-will be acessible via `$.common` context variable.
+will be accessible via `$.common` context variable.
 
 
 ---
