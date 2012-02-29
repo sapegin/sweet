@@ -14,6 +14,7 @@ var fs = require('fs'),
 	path = require('path'),
 	http = require('http'),
 	url = require('url'),
+	util = require('util'),
 	optparse = require('optparse'),
 	fest = require('fest'),
 	stylus = require('stylus'),
@@ -23,34 +24,28 @@ var fs = require('fs'),
 	treewatcher = require('tree-watcher');
 
 
-// Config
-try {
-	var o = JSON.parse(readUtfFile(path.join(process.cwd(), 'sweet.json')));
-}
-catch (err) {
-	error('Cannot open configuration file sweet.json.\n' + err);
-}
-
-init();
-
 // Global vars
 var compiledTemplates = {},
-	isDebug = false;
+	configPath = path.join(process.cwd(), 'sweet.json'),
+	o;
 
 
 // Command line options
 var parser = new optparse.OptionParser([
 		['-h', '--help', 'Shows this screen'],
+		['-i', '--init', 'Creates config file in current directory'],
 		['-d', '--debug', 'Debug mode'],
-		['-w', '--watch', 'Watch for changes in content, templates and styles. (Implies --debug)'],
-		['-s', '--serve', 'Serve website to localhost'],
+		['-w', '--watch', 'Watches for changes in content, templates and styles. (Implies --debug)'],
+		['-s', '--serve', 'Serves website to localhost'],
 		['-p', '--preview', '--serve --watch --debug']
-	]),
-	isBuild = true;
+	]);
 
 parser.on('help', function() {
-	isBuild = false;
 	console.log(parser.toString());
+});
+
+parser.on('init', function() {
+	createConfig();
 });
 
 parser.on('debug', function() {
@@ -59,27 +54,43 @@ parser.on('debug', function() {
 
 parser.on('watch', function() {
 	isDebug = true;
+	init();
 	watch();
+	build();
 });
 
 parser.on('serve', function() {
+	init();
 	serve();
+	build();
 });
 
 parser.on('preview', function() {
 	isDebug = true;
+	init();
 	serve();
 	watch();
+	build();
+});
+
+parser.on(function(opt) {
+	init();
+	build();
 });
 
 parser.parse(process.argv);
 
 
-// Run Forrest run!
-if (isBuild) build();
-
 
 function init() {
+	// Read config
+	try {
+		o = JSON.parse(readUtfFile(configPath));
+	}
+	catch (err) {
+		error('Cannot open configuration file sweet.json.\n' + err);
+	}
+
 	// Check required options
 	if (o.content_dir) {
 		['publish_dir', 'templates_dir', 'default_template_id'].forEach(requireConfigVariable);
@@ -388,6 +399,30 @@ function combine(options) {
 		if (err) {
 			error('Cannot write file ' + resultFile + '.');
 		}
+	});
+}
+
+function createConfig() {
+	var templatePath = path.join(__dirname, 'sweet.sample.json');
+	if (!path.existsSync(templatePath)) {
+		error('Cannot create Sweet config file: template file ' + templatePath + ' not found.');
+	}
+
+	path.exists(configPath, function(exists) {
+		if (exists) {
+			console.log('Sweet config file already exists in this direcotry.'.blue);
+			return;
+		}
+
+		var templateFile = fs.createReadStream(templatePath),
+			configFile = fs.createWriteStream(configPath);
+		util.pump(templateFile, configFile, function(err) {
+			if (err) {
+				error('Cannot create Sweet config file.');
+			}
+
+			console.log('Sweet config file created.'.green);
+		});
 	});
 }
 
