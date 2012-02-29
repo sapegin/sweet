@@ -21,7 +21,8 @@ var fs = require('fs'),
 	jsp = require('uglify-js').parser,
 	pro = require('uglify-js').uglify,
 	colors = require('colors'),
-	treewatcher = require('tree-watcher');
+	treewatcher = require('tree-watcher'),
+	richtypo = require('richtypo');
 
 
 // Global vars
@@ -127,6 +128,10 @@ function init() {
 			o.files[key].path = normalizePath(o.files[key].path);
 		}
 	}
+
+	if (!o.lang && !o.langs) {
+		o.lang = 'en';
+	}
 }
 
 function requireConfigVariable(key) {
@@ -191,7 +196,7 @@ function buildContent(recompile) {
 		}
 
 		// Additional data
-		data.lang = lang;
+		data.lang = lang || o.lang;
 		data.path = fileId;
 		data.url = fileToUrl(srcPath);
 		data.uri = fileToUri(srcPath);
@@ -525,6 +530,15 @@ function generateFiles(data) {
 		dataset.debug = isDebug;
 		for (var key in commons) {
 			dataset[key] = commons[key];
+		}
+
+		// Typographer
+		richtypo.lang(dataset.lang);
+		dataset.typographer = dataset.__ = richtypo;
+		dataset.pageTitle = dataset.title;
+		if (o.typographer !== false) {
+			dataset.title = richtypo.title(dataset.title);
+			dataset.content = richtypo.rich(dataset.content);
 		}
 
 		transform(dataset.template, fileId, dataset, saveContentFile);
