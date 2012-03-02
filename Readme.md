@@ -5,12 +5,13 @@ Sweet is a very simple static websites generator powered by Node.js. Contains te
 
 ## Features
 
-  - JSON or HTML content
+  - HTML, Markdown or JSON content
   - [Fest templates](https://github.com/mailru/fest)
   - JavaScript concatenation and minification (uses [UglifyJS](https://github.com/mishoo/UglifyJS))
   - [Stylus](https://github.com/LearnBoost/stylus) support (plain CSS not supported yet)
   - Embedded web server
   - Multilingual content
+  - Typography helper
   - Automatic rebuilding when content, templates or styles are changed
   - Versioned files (adds timestamp to file url to flush browser cache)
 
@@ -38,6 +39,10 @@ Builds website.
 `-d` or `--debug`
 
 Debug mode. You can test for `$.debug` in your templates.
+
+`-i` or `--init`
+
+Creates config file in current directory.
 
 `-w` or `--watch`
 
@@ -96,6 +101,12 @@ If your site is multilingual add this options:
 },
 ```
 
+Otherwise you can set single language for content (`'en'` by default):
+
+```json
+"lang": "en"
+```
+
 ### JavaScript Files
 
 To concatenate and minify some JavaScript:
@@ -137,6 +148,14 @@ To concatenate and minify some JavaScript:
 
 *Note:* All Stylus stylesheets should be in the same directory.
 
+### Typographer
+
+By default Sweet will apply [Richtypo.js](https://github.com/sapegin/richtypo.js) for `$.title` and `$.content`. To disable typographer add:
+
+```json
+"typographer": false
+```
+
 
 ## Using templates
 
@@ -144,7 +163,7 @@ Sweet uses Fest templating engine (born at Mail.ru). See [docs](https://github.c
 
 ### Content files
 
-Content can be both JSON or HTML. HTML files look like this:
+Content can be in HTML, Markdown of JSON. *HTML* files look like this:
 
 ```html
 title: Page title
@@ -161,7 +180,9 @@ Only `title` is required. After `\n---\n` you can place any HTML and then use it
 
 Additionally you can add any options you want. For example, `var1` will be `$.var1` in your templates.
 
-JSON content is almost the same:
+*Markdown* files are the same as HTML but file extension should be `.md`. In content part you can use GitHub flavored Markdown as well as any HTML.
+
+*JSON* content is almost the same:
 
 ```json
 {
@@ -175,6 +196,18 @@ JSON content is almost the same:
 ### Template context
 
 In addition to your own variables (see above) Sweet provides some useful template variables.
+
+`$.title`
+
+Page title.
+
+`$.pageTitle`
+
+Untypographed page title. When typographer is disabled (`"typographer": false` in config), `$.pageTitle` is equal to `$.title`.
+
+`$.content`
+
+Page content.
 
 `$.debug`
 
