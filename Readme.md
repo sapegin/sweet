@@ -11,7 +11,7 @@ Sweet is a very simple static websites generator powered by Node.js. Contains te
   - [Stylus](https://github.com/LearnBoost/stylus) support (plain CSS not supported yet)
   - Embedded web server
   - Multilingual content
-  - Typography helper
+  - Typography helper (uses [Richtypo.js](https://github.com/sapegin/richtypo.js))
   - Automatic rebuilding when content, templates or styles are changed
   - Versioned files (adds timestamp to file url to flush browser cache)
 
@@ -180,7 +180,7 @@ Only `title` is required. After `\n---\n` you can place any HTML and then use it
 
 Additionally you can add any options you want. For example, `var1` will be `$.var1` in your templates.
 
-*Markdown* files are the same as HTML but file extension should be `.md`. In content part you can use GitHub flavored Markdown as well as any HTML.
+*Markdown* files are the same as HTML but file extension should be `.md`. In content part you can use [GitHub flavored Markdown](http://github.github.com/github-flavored-markdown/) as well as any HTML.
 
 *JSON* content is almost the same:
 
