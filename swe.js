@@ -49,12 +49,12 @@ parser.on('debug', function() {
 
 parser.on('help', function() {
 	console.log(parser.toString());
-	halt();
+	this.halt();
 });
 
 parser.on('init', function() {
 	createConfig();
-	halt();
+	this.halt();
 });
 
 parser.on('watch', function() {
@@ -62,14 +62,14 @@ parser.on('watch', function() {
 	init();
 	watch();
 	build();
-	halt();
+	this.halt();
 });
 
 parser.on('serve', function() {
 	init();
 	serve();
 	build();
-	halt();
+	this.halt();
 });
 
 parser.on('preview', function() {
@@ -78,7 +78,7 @@ parser.on('preview', function() {
 	serve();
 	watch();
 	build();
-	halt();
+	this.halt();
 });
 
 parser.parse(process.argv);
