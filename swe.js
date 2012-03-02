@@ -575,7 +575,7 @@ function getContent(file) {
 		body = parts[1];
 
 	// Markdown content
-	if (ext === '.md') {
+	if (ext === '.md' || ext === '.markdown') {
 		body = marked(body);
 	}
 
