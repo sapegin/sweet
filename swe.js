@@ -538,8 +538,10 @@ function generateFiles(data) {
 		dataset.typographer = dataset.__ = richtypo;
 		dataset.pageTitle = dataset.title;
 		if (o.typographer !== false) {
-			dataset.title = richtypo.title(dataset.title);
-			dataset.content = richtypo.rich(dataset.content);
+			if (dataset.title)
+				dataset.title = richtypo.title(dataset.title);
+			if (dataset.content)
+				dataset.content = richtypo.rich(dataset.content);
 		}
 
 		transform(dataset.template, fileId, dataset, saveContentFile);
