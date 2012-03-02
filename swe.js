@@ -22,7 +22,8 @@ var fs = require('fs'),
 	pro = require('uglify-js').uglify,
 	colors = require('colors'),
 	treewatcher = require('tree-watcher'),
-	richtypo = require('richtypo');
+	richtypo = require('richtypo'),
+	marked = require('marked');
 
 
 // Global vars
@@ -556,19 +557,27 @@ function saveContentFile(result, fileId) {
 }
 
 function getContent(file) {
-	var content = readUtfFile(file),
-		ext = path.extname(file);
-	
+	var ext = path.extname(file);
+
+	// JSON content
 	if (ext === '.js' || ext === '.json') {
 		return readJsonFile(file);
 	}
+
+	var content = readUtfFile(file);
 
 	var parts = content.split('---');
 	if (parts.length !== 2) return {error: 'Head/body delimiter (---) not found.'};
 
 	var head = parts[0],
-		body = parts[1],
-		result = {content: body.trim()};
+		body = parts[1];
+
+	// Markdown content
+	if (ext === '.md') {
+		body = marked(body);
+	}
+
+	var result = {content: body.trim()};
 
 	var headLines = head.split('\n');
 	for (var lineIdx = 0; lineIdx < headLines.length; lineIdx++) {
