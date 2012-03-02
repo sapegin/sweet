@@ -2,7 +2,7 @@
   "name": "swe",
   "description": "Sweet: Simplest Web Engine Ever, The",
   "author": "Artem Sapegin <artem@sapegin.ru> (http://sapegin.me)",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "repository": {
     "type": "git",
     "url": "git@github.com:sapegin/sweet.git"
@@ -14,14 +14,13 @@
   },
   "dependencies": {
   	"fest": "git://github.com/mailru/fest.git#master",
-    "stylus": "0.23.x",
+    "richtypo": "*",
+    "stylus": "0.24.x",
 	"uglify-js": "1.2.x",
     "optparse": "1.0.x",
   	"tree-watcher": "0.2.x",
-    "colors": "0.6.x"
+    "colors": "0.6.x",
+    "marked": "0.2.x"
   },
-  "devDependencies": {},
-  "scripts": {
-	"lint": "jshint swe.js || true"
-  }
+  "devDependencies": {}
 }
