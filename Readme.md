@@ -98,7 +98,7 @@ If your site is multilingual add this options:
 "uri_prefixes": {
 	"ru": "/",
 	"en": "/"
-},
+}
 ```
 
 Otherwise you can set single language for content (`'en'` by default):
@@ -112,8 +112,8 @@ Otherwise you can set single language for content (`'en'` by default):
 To concatenate and minify some JavaScript:
 
 ```json
-"javascripts": [
-	{
+"javascripts": {
+	"main": {
 		"in": [
 			"js/test1.js",
 			"js/test2.js",
@@ -121,7 +121,7 @@ To concatenate and minify some JavaScript:
 		],
 		"out": "js/test.min.js"
 	}
-],
+}
 ```
 
 ### Versioned files
@@ -138,12 +138,12 @@ To concatenate and minify some JavaScript:
 ### Stylus 
 
 ```json
-"stylesheets": [
-	{
+"stylesheets": {
+	"main": {
 		"in": "styles/index.styl",
 		"out": "htdocs/styles/s.css"
 	}
-],
+}
 ```
 
 *Note:* All Stylus stylesheets should be in the same directory.
@@ -180,7 +180,7 @@ Only `title` is required. After `\n---\n` you can place any HTML and then use it
 
 Additionally you can add any options you want. For example, `var1` will be `$.var1` in your templates.
 
-*Markdown* files are the same as HTML but file extension should be `.md`. In content part you can use [GitHub flavored Markdown](http://github.github.com/github-flavored-markdown/) as well as any HTML.
+*Markdown* files are the same as HTML but file extension should be `.md` or `.markdown`. In content part you can use [GitHub flavored Markdown](http://github.github.com/github-flavored-markdown/) as well as any HTML.
 
 *JSON* content is almost the same:
 

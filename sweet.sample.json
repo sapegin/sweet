@@ -13,19 +13,19 @@
 		"en": "/"
 	},
 
-	"stylesheets": [
-		{
+	"stylesheets": {
+		"main": {
 			"in": "",
 			"out": ""
 		}
-	],
+	},
 
-	"javascripts": [
-		{
+	"javascripts": {
+		"main": {
 			"in": [],
 			"out": ""
 		}
-	],
+	},
 
 	"files": {
 		"css": {

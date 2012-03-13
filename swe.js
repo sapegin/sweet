@@ -107,9 +107,11 @@ function init() {
 	['content_dir', 'publish_dir', 'templates_dir'].forEach(normalizeConfigPath);
 
 	['stylesheets', 'javascripts'].forEach(function(key) {
-		if (o[key]) o[key].forEach(function(group, groupIdx) {
-			if (!group.in) error('Required config variable ' + key + '.' + groupIdx + '.in not found.');
-			if (!group.out) error('Required config variable ' + key + '.' + groupIdx + '.out not found.');
+		if (!o[key]) return;
+		for (var groupName in o[key]) {
+			var group = o[key][groupName];
+			if (!group.in) error('Required config variable ' + key + '.' + groupName + '.in not found.');
+			if (!group.out) error('Required config variable ' + key + '.' + groupName + '.out not found.');
 			if (typeof group.in === 'object') {
 				for (var inIdx in group.in) {
 					group.in[inIdx] = normalizePath(group.in[inIdx]);
@@ -119,7 +121,12 @@ function init() {
 				group.in = normalizePath(group.in);
 			}
 			group.out = normalizePath(group.out);
-		});
+
+			// Stylesheets directory
+			if (key === 'stylesheets' && !o.stylesheets_dir) {
+				o.stylesheets_dir = path.dirname(group.in);
+			}
+		}
 	});
 
 	if (o.files) {
@@ -208,22 +215,23 @@ function buildContent(recompile) {
 
 	// File versions
 	if (o.files) {
-		for (var id in o.files) {
-			var file = o.files[id];
+		for (var versionedId in o.files) {
+			var file = o.files[versionedId];
 			if (!path.existsSync(file.path)) {
 				error('Versioned file ' + file.path + ' not found');
 			}
-			versions[id] = file.href.replace('{version}', fs.statSync(file.path).mtime.getTime());
+			versions[versionedId] = file.href.replace('{version}', fs.statSync(file.path).mtime.getTime());
 		}
 	}
 
 	// Combined JavaScripts
-	var javascripts = [];
+	var javascripts = {};
 	if (isDebug && o.javascripts) {
-		for (var groupIdx = 0; groupIdx < o.javascripts.length; groupIdx++) {
-			var group = o.javascripts[groupIdx];
+		for (var jsId in o.javascripts) {
+			var group = o.javascripts[jsId];
+			javascripts[jsId] = [];
 			for (var jsIdx = 0; jsIdx < group.in.length; jsIdx++) {
-				javascripts.push(toUnixPath(group.in[jsIdx].replace(o.publish_dir, '')));
+				javascripts[jsId].push(toUnixPath(group.in[jsIdx].replace(o.publish_dir, '')));
 			}
 		}
 	}
@@ -317,8 +325,7 @@ function watchStylesheets() {
 
 	buildStylesheets();
 
-	var stylesheetsDir = path.dirname(o.stylesheets[0].in);
-	watchFolder(stylesheetsDir, buildStylesheets);
+	watchFolder(o.stylesheets_dir, buildStylesheets);
 }
 
 function watchFolder(dir, callback) {
@@ -339,19 +346,15 @@ function watchFolder(dir, callback) {
 }
 
 function buildStylesheets() {
-	if (!o.stylesheets) return;
-
-	for (var ssIdx = 0; ssIdx < o.stylesheets.length; ssIdx++) {
-		var ss = o.stylesheets[ssIdx];
+	for (var id in o.stylesheets) {
+		var ss = o.stylesheets[id];
 		stylusBuild(ss.in, ss.out);
 	}
 }
 
 function combineJavaScript() {
-	if (!o.javascripts) return;
-
-	for (var groupIdx = 0; groupIdx < o.javascripts.length; groupIdx++) {
-		var group = o.javascripts[groupIdx];
+	for (var id in o.javascripts) {
+		var group = o.javascripts[id];
 		combine({
 			in: group.in,
 			out: group.out,
@@ -389,7 +392,7 @@ function combine(options) {
 		if (fs.statSync(file).mtime.getTime() > resultMtime) {
 			updated = true;
 		}
-		
+
 		var contents = readUtfFile(file);
 		if (typeof filePreprocessor === 'function') { 
 			contents = filePreprocessor(contents);
