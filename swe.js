@@ -287,7 +287,7 @@ function serve(lang, port) {
 
 			console.log('200: ' + uri);
 			var mimeType = mimeTypes[path.extname(filename)] || mimeTypes['default'];
-			res.writeHead(200, {'Content-Type': mimeType});
+			res.writeHead(200, {'Content-Type': mimeType + '; charset=utf-8'});
 
 			var fileStream = fs.createReadStream(filename);
 			fileStream.pipe(res);
