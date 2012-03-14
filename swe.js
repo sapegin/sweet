@@ -389,6 +389,10 @@ function combine(options) {
 		filesContent = [];
 	for (var fileIdx = 0, filesCnt = inputFiles.length; fileIdx < filesCnt; fileIdx++) {
 		var file = inputFiles[fileIdx];
+		if (!path.existsSync(file)) {
+			error('Cannot find file ' + file + ' listed in your config.');
+		}
+
 		if (fs.statSync(file).mtime.getTime() > resultMtime) {
 			updated = true;
 		}
