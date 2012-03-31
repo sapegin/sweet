@@ -207,7 +207,7 @@ function buildContent(recompile) {
 		data.path = fileId;
 		data.url = fileToUrl(srcPath);
 		data.uri = fileToUri(srcPath);
-		
+
 		sitemap[fileId] = getSitemapData(data);
 		datasets[fileId] = data;
 	}
@@ -244,7 +244,7 @@ function buildContent(recompile) {
 		sitemap: sitemap,
 		commons: commons,
 		versions: versions,
-		javascripts: javascripts 
+		javascripts: javascripts
 	});
 }
 
@@ -397,7 +397,7 @@ function combine(options) {
 		}
 
 		var contents = readUtfFile(file);
-		if (typeof filePreprocessor === 'function') { 
+		if (typeof filePreprocessor === 'function') {
 			contents = filePreprocessor(contents);
 		}
 		filesContent.push(contents);
@@ -526,7 +526,7 @@ function generateFiles(data) {
 		commons = data.commons,
 		versions = data.versions,
 		javascripts = data.javascripts;
-		
+
 	for (var fileId in datasets) {
 		var dataset = datasets[fileId];
 
@@ -609,10 +609,10 @@ function getFilesList(dir) {
 	if (lastChar === '/' || lastChar === '\\') {
 		dir = dir.slice(0, -1);
 	}
-	
+
 	var items = findSync(dir),
 		files = [];
-	
+
 	for (var itemIdx = 0; itemIdx < items.length; itemIdx++) {
 		var item = items[itemIdx];
 		if (!fs.statSync(item).isDirectory()) {
@@ -677,17 +677,17 @@ function findSync(dir, cb) {
 		if (cb) cb(dir, rootStat);
 		return [dir];
 	}
-	
+
 	return fs.readdirSync(dir).reduce(function (files, file) {
 		var p = path.join(dir, file);
 		var stat = fs.statSync(p);
 		if (cb) cb(p, stat);
 		files.push(p);
-		
+
 		if (stat.isDirectory()) {
 			files.push.apply(files, findSync(p, cb));
 		}
-		
+
 		return files;
 	}, []);
 }
