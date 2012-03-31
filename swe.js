@@ -29,7 +29,7 @@ var fs = require('fs'),
 // Global vars
 var compiledTemplates = {},
 	isDebug = false,
-	isProcessed = true,
+	isProcessed = false,
 	configPath = path.join(process.cwd(), 'sweet.json'),
 	o;
 
@@ -46,18 +46,20 @@ var parser = new optparse.OptionParser([
 
 parser.on('debug', function() {
 	isDebug = true;
-	isProcessed = false;
 });
 
 parser.on('help', function() {
+	isProcessed = true;
 	console.log(parser.toString());
 });
 
 parser.on('init', function() {
+	isProcessed = true;
 	createConfig();
 });
 
 parser.on('watch', function() {
+	isProcessed = true;
 	isDebug = true;
 	init();
 	watch();
@@ -65,12 +67,14 @@ parser.on('watch', function() {
 });
 
 parser.on('serve', function() {
+	isProcessed = true;
 	init();
 	serve();
 	build();
 });
 
 parser.on('preview', function() {
+	isProcessed = true;
 	isDebug = true;
 	init();
 	serve();
@@ -85,7 +89,6 @@ if (!isProcessed) {
 	init();
 	build();
 }
-
 
 
 function init() {
