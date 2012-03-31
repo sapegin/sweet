@@ -356,9 +356,12 @@ function buildStylesheets() {
 
 function combineJavaScript() {
 	for (var id in o.javascripts) {
-		var group = o.javascripts[id];
+		var group = o.javascripts[id],
+			files = group.in;
+		if (typeof files === 'string') files = [files];
+
 		combine({
-			in: group.in,
+			in: files,
 			out: group.out,
 			glue: ';',
 			filePreprocessor: combineJavaScriptPreprocess,
