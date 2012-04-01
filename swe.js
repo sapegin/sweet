@@ -164,7 +164,7 @@ function build() {
 }
 
 function buildContent(recompile) {
-	if (!o.content_dir) return;
+	if (!o.content_dir || !o.templates_dir) return;
 
 	recompile = recompile !== false;
 	var datasets = {},
@@ -313,7 +313,10 @@ function serve(lang, port) {
 }
 
 function watchTemplatesAndContent() {
+	if (!o.content_dir || !o.templates_dir) return;
+
 	buildContent();
+
 	watchFolder(o.content_dir, function() {
 		buildContent(false);
 	});
@@ -321,9 +324,7 @@ function watchTemplatesAndContent() {
 }
 
 function watchStylesheets() {
-	if (!o.stylesheets) {
-		return;
-	}
+	if (!o.stylesheets) return;
 
 	buildStylesheets();
 
