@@ -652,6 +652,10 @@ function error(message) {
 	process.exit(1);
 }
 
+function warning(message) {
+	console.error('%s'.red, message);
+}
+
 function transform(templateId, fileId, json, callback) {
 	var template = compiledTemplates[templateId];
 	if (!template) {
@@ -710,8 +714,10 @@ function stylusBuild(stylpath, csspath) {
 		.set('filename', stylpath)
 		.set('compress', isDebug)
 		.set('include css', true)
-		.render(function(err, css){
-			if (err) error('Stylus error.' + '\n\n' + err.message || err.stack);
+		.render(function(err, css) {
+			if (err) {
+				warning('Stylus error.' + '\n\n' + err.message || err.stack);
+			}
 
 			fs.writeFile(csspath, css, function(err) {
 				if (err) {
