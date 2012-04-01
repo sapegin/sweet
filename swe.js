@@ -63,7 +63,7 @@ parser.on('watch', function() {
 	isDebug = true;
 	init();
 	watch();
-	build();
+	buildContent();
 });
 
 parser.on('serve', function() {
@@ -79,7 +79,7 @@ parser.on('preview', function() {
 	init();
 	serve();
 	watch();
-	build();
+	buildContent();
 });
 
 parser.parse(process.argv);
