@@ -710,19 +710,22 @@ function stylusBuild(stylpath, csspath) {
 	var styl = readUtfFile(stylpath);
 	if (!styl) error('Cannot open stylesheet ' + stylpath + '.');
 
-	stylus(styl)
+	var compiler = stylus(styl)
 		.set('filename', stylpath)
 		.set('compress', isDebug)
-		.set('include css', true)
-		.render(function(err, css) {
-			if (err) {
-				warning('Stylus error.' + '\n\n' + err.message || err.stack);
-			}
+		.set('include css', true);
+	if (o.stylusEmbedUrls)
+		compiler = compiler.define('url', stylus.url());
 
-			fs.writeFile(csspath, css, function(err) {
-				if (err) {
-					error('Cannot write file ' + csspath + '.');
-				}
-			});
+	compiler.render(function(err, css) {
+		if (err) {
+			warning('Stylus error.' + '\n\n' + err.message || err.stack);
+		}
+
+		fs.writeFile(csspath, css, function(err) {
+			if (err) {
+				error('Cannot write file ' + csspath + '.');
+			}
 		});
+	});
 }
