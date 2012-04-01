@@ -713,9 +713,8 @@ function stylusBuild(stylpath, csspath) {
 	var compiler = stylus(styl)
 		.set('filename', stylpath)
 		.set('compress', isDebug)
-		.set('include css', true);
-	if (o.stylusEmbedUrls)
-		compiler = compiler.define('url', stylus.url());
+		.set('include css', true)
+		.define('embedurl', stylus.url());
 
 	compiler.render(function(err, css) {
 		if (err) {
