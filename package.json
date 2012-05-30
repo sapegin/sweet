@@ -2,7 +2,7 @@
   "name": "swe",
   "description": "Sweet: Simplest Web Engine Ever, The",
   "author": "Artem Sapegin <artem@sapegin.ru> (http://sapegin.me)",
-  "version": "0.5.1",
+  "version": "0.5.4",
   "repository": {
     "type": "git",
     "url": "git@github.com:sapegin/sweet.git"
