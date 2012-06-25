@@ -135,7 +135,7 @@ To concatenate and minify some JavaScript:
 }
 ```
 
-### Stylus 
+### Stylus
 
 ```json
 "stylesheets": {
@@ -265,6 +265,20 @@ Versioned files hash:
 
 JavaScript source files list.
 
+### Template functions
+
+You can use typographer and Markdown parser in your templates:
+
+- `$.t()` — enhancing typography: non-breaking spaces, abbreviations.
+- `$.tt()` — typography for big text: the same as rich + ampersands and hanging punctuation.
+- `$.tl()` — simple typographer (quotes, em-dash, etc.) for user generated content (e.g. comments).
+- `$.md()` — Markdown.
+
+In example: markdowned and typogrphed text from `myText` context variable.
+
+```xml
+<f:value>$.t($.md($.myText))</f:value>
+```
 
 ### Common data
 
@@ -293,7 +307,7 @@ will be accessible via `$.common` context variable.
 
 ---
 
-## License 
+## License
 
 (The MIT License)
 

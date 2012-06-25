@@ -546,9 +546,8 @@ function generateFiles(data) {
 			dataset[key] = commons[key];
 		}
 
-		// Typographer
+		// Typography
 		richtypo.lang(dataset.lang);
-		dataset.typographer = dataset.__ = richtypo;
 		dataset.pageTitle = dataset.title;
 		if (o.typographer !== false) {
 			if (dataset.title)
@@ -556,6 +555,14 @@ function generateFiles(data) {
 			if (dataset.content)
 				dataset.content = richtypo.rich(dataset.content);
 		}
+
+		// Expose typographer to templates
+		dataset.t = richtypo.rich;
+		dataset.tt = richtypo.title;
+		dataset.tl = richtypo.lite;
+
+		// Expose markdown parser to templates
+		dataset.md = marked;
 
 		transform(dataset.template, fileId, dataset, saveContentFile);
 	}
