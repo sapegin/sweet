@@ -273,6 +273,7 @@ You can use typographer and Markdown parser in your templates:
 - `$.tt()` — typography for big text: the same as rich + ampersands and hanging punctuation.
 - `$.tl()` — simple typographer (quotes, em-dash, etc.) for user generated content (e.g. comments).
 - `$.md()` — Markdown.
+- `$.mds()` — Markdown (not wrapped in `<p>` tag).
 
 In example: markdowned and typogrphed text from `myText` context variable.
 

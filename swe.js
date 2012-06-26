@@ -561,8 +561,9 @@ function generateFiles(data) {
 		dataset.tt = richtypo.title;
 		dataset.tl = richtypo.lite;
 
-		// Expose markdown parser to templates
+		// Expose Markdown parser to templates
 		dataset.md = marked;
+		dataset.mds = markedString;
 
 		transform(dataset.template, fileId, dataset, saveContentFile);
 	}
@@ -734,4 +735,14 @@ function stylusBuild(stylpath, csspath) {
 			}
 		});
 	});
+}
+
+
+/* Markdown */
+
+function markedString(text) {
+	text = marked(text);
+	text = text.replace(/^\s*<p>/, '');
+	text = text.replace(/<\/p>\s*$/, '');
+	return text;
 }
