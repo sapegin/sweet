@@ -279,7 +279,7 @@ function serve(lang, port) {
 			filename = path.join(o.publish_dir, uri);
 		}
 
-		path.exists(filename, function(exists) {
+		fs.exists(filename, function(exists) {
 			if (!exists) {
 				console.log(colors.red('404: ' + uri));
 				res.writeHead(404);
@@ -432,7 +432,7 @@ function createConfig() {
 		error('Cannot create Sweet config file: template file ' + templatePath + ' not found.');
 	}
 
-	path.exists(configPath, function(exists) {
+	fs.exists(configPath, function(exists) {
 		if (exists) {
 			console.log('Sweet config file already exists in this direcotry.'.blue);
 			return;
