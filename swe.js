@@ -219,7 +219,7 @@ function buildContent(recompile) {
 	if (o.files) {
 		for (var versionedId in o.files) {
 			var file = o.files[versionedId];
-			if (!path.existsSync(file.path)) {
+			if (!fs.existsSync(file.path)) {
 				error('Versioned file ' + file.path + ' not found');
 			}
 			versions[versionedId] = file.href.replace('{version}', fs.statSync(file.path).mtime.getTime());
@@ -387,7 +387,7 @@ function combine(options) {
 		resultFile = options.out,
 		filePreprocessor = options.filePreprocessor,
 		resultMtime = 0;
-	if (path.existsSync(resultFile)) {
+	if (fs.existsSync(resultFile)) {
 		resultMtime = fs.statSync(resultFile).mtime.getTime();
 	}
 
@@ -395,7 +395,7 @@ function combine(options) {
 		filesContent = [];
 	for (var fileIdx = 0, filesCnt = inputFiles.length; fileIdx < filesCnt; fileIdx++) {
 		var file = inputFiles[fileIdx];
-		if (!path.existsSync(file)) {
+		if (!fs.existsSync(file)) {
 			error('Cannot find file ' + file + ' listed in your config.');
 		}
 
@@ -428,7 +428,7 @@ function combine(options) {
 
 function createConfig() {
 	var templatePath = path.join(__dirname, 'sweet.sample.json');
-	if (!path.existsSync(templatePath)) {
+	if (!fs.existsSync(templatePath)) {
 		error('Cannot create Sweet config file: template file ' + templatePath + ' not found.');
 	}
 
@@ -463,7 +463,7 @@ function getSitemapData(data) {
 function compileTemplates(templates) {
 	for (var templateId in templates) {
 		var templatePath = path.join(o.templates_dir, templateId + '.xhtml');
-		if (!path.existsSync(templatePath)) {
+		if (!fs.existsSync(templatePath)) {
 			error('Template file ' + templatePath + ' not found.');
 			return;
 		}
