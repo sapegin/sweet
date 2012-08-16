@@ -1,163 +1,120 @@
 # Sweet: Simplest Web Engine Ever, The
 
-Sweet is a very simple static websites generator powered by Node.js. Contains template engine, JavaScript concatenator/minificator and Stylus support. (You can use only parts you need.)
+Sweet is a very simple static websites generator powered by Node.js and designed to run as [Grunt](https://github.com/cowboy/grunt) task.
 
 
 ## Features
 
-  - HTML, Markdown or JSON content
-  - [Fest templates](https://github.com/mailru/fest)
-  - JavaScript concatenation and minification (uses [UglifyJS](https://github.com/mishoo/UglifyJS))
-  - [Stylus](https://github.com/LearnBoost/stylus) support (plain CSS not supported yet)
-  - Embedded web server
-  - Multilingual content
-  - Typography helper (uses [Richtypo.js](https://github.com/sapegin/richtypo.js))
-  - Automatic rebuilding when content, templates or styles are changed
-  - Versioned files (adds timestamp to file url to flush browser cache)
+- HTML, Markdown or JSON content
+- [Fest templates](https://github.com/mailru/fest)
+- Multilingual content
+- Typography helper (uses [Richtypo.js](https://github.com/sapegin/richtypo.js))
+- Versioned files (adds timestamp to file URL to flush browser cache)
+- Plus all Grunt features: JavaScript concatenation and minification, Stylus/SASS/LESS compilation, embedded web server and much more
 
 
 ## Installation
 
+To use Sweet you need to install Grunt first:
+
 ```bash
-$ npm install swe -g
+$ npm install grunt -g
 ```
+
+Then install Sweet Grunt task. `cd` to your project’s directory and type:
+
+```bash
+$ mkdir node_modules || npm install grunt-sweet
+```
+
+If you didn’t use Grunt before see the [Getting Started](https://github.com/cowboy/grunt/blob/master/docs/getting_started.md) to understand how it works.
 
 
 ## Example
 
-Go to `example` folder, type `swe -p` and point your browser to http://127.0.0.1:8000/. Now you can edit any file and press F5 to see changes you made.
-
-
-## Command line switches
-
-```bash
-$ swe
-```
-
-Builds website.
-
-`-d` or `--debug`
-
-Debug mode. You can test for `$.debug` in your templates.
-
-`-i` or `--init`
-
-Creates config file in current directory.
-
-`-w` or `--watch`
-
-Watch mode. Will rebuild website on any change in content, templates or styles.
-
-`-s` or `--serve`
-
-Builds and serves your website to localhost.
-
-`-p` or `--preview`
-
-`--serve` + `--watch` + `--debug`—the most convenient mode for development.
+Go to `example` folder, type `grunt serve` and point your browser to [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Now you can edit any file and press F5 in browser to see changes you made.
 
 
 ## Configuration
 
-Place `sweet.json` to your project’s root directory.
+Place `grunt.js` to your project’s root directory.
 
-The only required option is `publish_dir`—it is where your generated files will be placed. So minimal config is:
+```js
+module.exports = function(grunt) {
+	grunt.initConfig({
+		sweet: {
+			content_dir: 'content',
+			publish_dir: 'htdocs',
+			templates_dir: 'templates'
+		}
+	});
 
-```json
-{
-	"publish_dir": "htdocs"
-}
+	grunt.loadNpmTasks('grunt-sweet');
+	grunt.registerTask('default', 'sweet');
+};
 ```
 
-But it is of course useless :) You should add any of the following groups of options.
+This is the mininum required config file. Type `grunt` to run it.
 
-### Templates
+See example gruntfile in `example/grunt.js` or [my homepage’s gruntfile](https://gist.github.com/3357685).
 
-Available options are:
+### Basic Options
 
-```json
-"content_dir": "content",
-"templates_dir": "templates",
-"default_template_id": "page",
-"url_prefixes": "/",
-"uri_prefixes": "/"
+Required parameters are:
+
+```js
+content_dir: 'content',
+publish_dir: 'htdocs',
+templates_dir: 'templates'
 ```
 
-`content_dir`, `templates_dir` and `default_template_id` are required.
+And optional are:
 
-See *Working with templates* section below.
+```js
+default_template_id: 'template',  // 'template' by default
+uri_prefixes: '/',  // '/' by default. Use it when your site located not in root directory
+lang: 'en'  // 'en' by default
+```
 
-If your site is multilingual add this options:
+If your site is multilingual add this options (instead of `lang`):
 
-```json
-"langs": ["ru", "en"],
-"url_prefixes": {
-	"ru": "http://sapegin.ru/",
-	"en": "http://sapegin.me/"
+```js
+langs: ['ru', 'en'],
+url_prefixes: {
+	ru: 'http://sapegin.ru/',
+	en: 'http://sapegin.me/'
 },
-"uri_prefixes": {
-	"ru": "/",
-	"en": "/"
-}
-```
-
-Otherwise you can set single language for content (`'en'` by default):
-
-```json
-"lang": "en"
-```
-
-### JavaScript Files
-
-To concatenate and minify some JavaScript:
-
-```json
-"javascripts": {
-	"main": {
-		"in": [
-			"js/test1.js",
-			"js/test2.js",
-			"js/test3.js"
-		],
-		"out": "js/test.min.js"
-	}
+uri_prefixes: {
+	'ru': '/',
+	'en': '/'
 }
 ```
 
 ### Versioned files
 
-```json
-"files": {
-	"css": {
-		"path": "htdocs/styles/s.css",
-		"href": "../styles/s.css?{version}"
+```js
+files: {
+	css: {
+		path: 'htdocs/build/styles.css',
+		href: '/build/styles.css?{version}'
+	},
+	js: {
+		path: 'htdocs/build/scripts.js',
+		href: '/build/scripts.js?{version}'
 	}
 }
 ```
-
-### Stylus
-
-```json
-"stylesheets": {
-	"main": {
-		"in": "styles/index.styl",
-		"out": "htdocs/styles/s.css"
-	}
-}
-```
-
-*Note:* All Stylus stylesheets should be in the same directory.
 
 ### Typographer
 
 By default Sweet will apply [Richtypo.js](https://github.com/sapegin/richtypo.js) for `$.title` and `$.content`. To disable typographer add:
 
-```json
-"typographer": false
+```js
+typographer: false
 ```
 
 
-## Using templates
+## Using Templates
 
 Sweet uses Fest templating engine (born at Mail.ru). See [docs](https://github.com/mailru/fest) (in Russian) in official repo or examples here.
 
@@ -176,7 +133,7 @@ var2: another value
 <p>Any HTML here.</p>
 ```
 
-Only `title` is required. After `\n---\n` you can place any HTML and then use it in your templates as `$.content`. Add `template` to specify template (or `default_template_id` will be used).
+Only `title` is required. After `\n---\n` you can place any HTML and then use it in your templates as `$.content`. Add `template` to specify template (or value of `default_template_id` will be used).
 
 Additionally you can add any options you want. For example, `var1` will be `$.var1` in your templates.
 
@@ -261,10 +218,6 @@ Versioned files hash:
 }
 ```
 
-`$.javascripts` (available only in debug mode)
-
-JavaScript source files list.
-
 ### Template functions
 
 You can use typographer and Markdown parser in your templates:
@@ -306,29 +259,35 @@ For example `.common.json` with this contents:
 will be accessible via `$.common` context variable.
 
 
+## How to Setup Development Environment
+
+Add to your `grunt.js`:
+
+```js
+watch: {
+	sweet: {
+		files: [
+			'<%= sweet.content_dir %>/**',
+			'<%= sweet.templates_dir %>/**'
+		],
+		tasks: 'sweet'
+	}
+},
+server: {
+	port: 8000,
+	base: '<config:sweet.publish_dir>'
+}
+```
+
+And:
+
+grunt.registerTask('serve', 'server watch');
+
+Then type `grunt serve` and point your browser to [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Now you can edit any content file or template and press F5 in browser to see changes you made.
+
+
 ---
 
 ## License
 
-(The MIT License)
-
-Copyright © 2012 Artem Sapegin, artem@sapegin.ru, http://sapegin.me
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-'Software'), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED 'AS IS', WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.
-IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY
-CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,
-TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
-SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+The MIT License, see the included `License.md` file.

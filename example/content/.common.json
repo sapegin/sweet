@@ -3,11 +3,11 @@
 	"menu": [
 		{
 			"title": "Home",
-			"href": "/"
+			"path": "index"
 		},
 		{
 			"title": "About",
-			"href": "/about"
+			"path": "about"
 		}
 	]
 }

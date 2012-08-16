@@ -12,24 +12,20 @@
 			<header>
 				<h1><f:value>$.common.sitename</f:value></h1>
 				<ul>
-					<f:foreach iterate="$.common.menu" index="idx">
-						<f:script>$.item = $.common.menu[idx]</f:script>
+					<f:for iterate="$.common.menu" index="i" value="item">
 						<li>
 							<f:choose>
-								<f:when test="$.uri == $.item.href">
-									<b><f:value>$.item.title</f:value></b>
+								<f:when test="$.path == item.path">
+									<b><f:value>item.title</f:value></b>
 								</f:when>
 								<f:otherwise>
-									<a>
-										<f:attributes>
-											<f:attribute name="href"><f:value>$.item.href</f:value></f:attribute>
-										</f:attributes>
-										<f:value>$.item.title</f:value>
-									</a>								
+									<a href="{$.map[item.path].uri}">
+										<f:value>item.title</f:value>
+									</a>
 								</f:otherwise>
 							</f:choose>
 						</li>
-					</f:foreach>
+					</f:for>
 				</ul>
 			</header>
 			<div class="content">
@@ -37,13 +33,14 @@
 			</div>
 			<div>
 				<h2>Context variables</h2>
-				<f:script>$.vars = ['debug', 'title', 'path', 'uri', 'url']</f:script>
-				<f:for iterate="$.vars" index="idx">
-					<f:script>$.key = $.vars[idx]</f:script>
-					<f:value>$.key</f:value>
-					<f:text value=" = "/>
-					<f:value>$[$.key]</f:value><br/>
-				</f:for>
+				<pre>
+					<f:script>$.vars = ['debug', 'title', 'path', 'uri', 'url']</f:script>
+					<f:for iterate="$.vars" index="i" value="key">
+						<f:value>key</f:value>
+						<f:text value=" = "/>
+						<f:value>$[key]</f:value><br/>
+					</f:for>
+				</pre>
 			</div>
 			<footer>
 				<f:text value="© Artem Sapegin, 2011—"/>
