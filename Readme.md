@@ -73,7 +73,8 @@ And optional are:
 ```js
 default_template_id: 'template',  // 'template' by default
 uri_prefixes: '/',  // '/' by default. Use it when your site located not in root directory
-lang: 'en'  // 'en' by default
+lang: 'en',  // 'en' by default
+dot_html: false  // false by default (but always true in debug mode). Adds `.html` to all links
 ```
 
 If your site is multilingual add this options (instead of `lang`):
