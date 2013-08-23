@@ -1,6 +1,6 @@
 # Sweet: Simplest Web Engine Ever, The
 
-Sweet is a very simple static websites generator powered by Node.js and designed to run as [Grunt](https://github.com/cowboy/grunt) task.
+Sweet is a very simple static websites generator powered by Node.js and designed to run as [Grunt](http://gruntjs.com/) task.
 
 
 ## Features
@@ -18,26 +18,26 @@ Sweet is a very simple static websites generator powered by Node.js and designed
 To use Sweet you need to install Grunt first:
 
 ```bash
-$ npm install grunt -g
+$ npm install grunt-cli -g
 ```
 
 Then install Sweet Grunt task. `cd` to your project’s directory and type:
 
 ```bash
-$ mkdir node_modules || npm install grunt-sweet
+$ npm install --save-dev grunt grunt-sweet
 ```
 
-If you didn’t use Grunt before see the [Getting Started](https://github.com/cowboy/grunt/blob/master/docs/getting_started.md) to understand how it works.
+If you didn’t use Grunt before see the [Getting Started](http://gruntjs.com/getting-started) to understand how it works.
 
 
 ## Example
 
-Go to `example` folder, type `grunt serve` and point your browser to [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Now you can edit any file and press F5 in browser to see changes you made.
+Go to `example` folder, type `npm install`, then `grunt serve` and point your browser to [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Now you can edit any file and press F5 in browser to see changes you made.
 
 
 ## Configuration
 
-Place `grunt.js` to your project’s root directory.
+Place `Gruntfile.js` to your project’s root directory.
 
 ```js
 module.exports = function(grunt) {
@@ -50,13 +50,13 @@ module.exports = function(grunt) {
 	});
 
 	grunt.loadNpmTasks('grunt-sweet');
-	grunt.registerTask('default', 'sweet');
+	grunt.registerTask('default', ['sweet']);
 };
 ```
 
 This is the mininum required config file. Type `grunt` to run it.
 
-See example gruntfile in `example/grunt.js` or [my homepage’s gruntfile](https://gist.github.com/3357685).
+See example gruntfile in `example/Gruntfile.js` or [my homepage’s gruntfile](https://gist.github.com/3357685).
 
 ### Basic Options
 
@@ -264,7 +264,7 @@ will be accessible via `$.common` context variable.
 
 ## How to Setup Development Environment
 
-Add to your `grunt.js`:
+Add to your `Gruntfile.js`:
 
 ```js
 watch: {
@@ -276,17 +276,32 @@ watch: {
 		tasks: 'sweet'
 	}
 },
-server: {
-	port: 8000,
-	base: '<config:sweet.publish_dir>'
+connect: {
+	web: {
+		options: {
+			port: 8000,
+			base: '<config:sweet.publish_dir>'
+		}
+	}
 }
 ```
 
 And:
 
-grunt.registerTask('serve', 'server watch');
+```
+grunt.loadNpmTasks('grunt-watch');
+grunt.loadNpmTasks('grunt-connect');
+grunt.registerTask('serve', ['connect', 'watch']);
+```
 
 Then type `grunt serve` and point your browser to [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Now you can edit any content file or template and press F5 in browser to see changes you made.
+
+
+## Release History
+
+### 2013-08-23 v2.0.3
+
+* Show template compilation errors.
 
 
 ---
