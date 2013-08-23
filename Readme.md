@@ -75,7 +75,7 @@ default_template_id: 'template',  // 'template' by default
 uri_prefixes: '/',  // '/' by default. Use it when your site located not in root directory
 url_prefixes: '/',  // '/' by default. Use it when different languages located on different domains
 lang: 'en',  // 'en' by default
-root_lang: 'en',  // null by default
+root_lang: 'en',  // null by default	
 dot_html: false  // false by default (but always true in debug mode). Adds `.html` to all links
 ```
 
