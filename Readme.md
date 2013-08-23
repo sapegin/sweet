@@ -299,6 +299,10 @@ Then type `grunt serve` and point your browser to [http://127.0.0.1:8000/](http:
 
 ## Release History
 
+### 2013-08-23 v2.0.4
+
+* Fix path.join error on single language sites.
+
 ### 2013-08-23 v2.0.3
 
 * Show template compilation errors.
