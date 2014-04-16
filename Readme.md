@@ -296,17 +296,9 @@ grunt.registerTask('serve', ['connect', 'watch']);
 
 Then type `grunt serve` and point your browser to [http://127.0.0.1:8000/](http://127.0.0.1:8000/). Now you can edit any content file or template and press F5 in browser to see changes you made.
 
+## Changelog
 
-## Release History
-
-### 2013-08-23 v2.0.4
-
-* Fix path.join error on single language sites.
-
-### 2013-08-23 v2.0.3
-
-* Show template compilation errors.
-
+The changelog can be found in the [Changelog.md](Changelog.md) file.
 
 ---
 
