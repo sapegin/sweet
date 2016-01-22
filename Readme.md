@@ -1,5 +1,7 @@
 # Sweet: Simplest Web Engine Ever, The
 
+[![No Maintenance Intended](http://unmaintained.tech/badge.svg)](http://unmaintained.tech/)
+
 Sweet is a very simple static websites generator powered by Node.js and designed to run as [Grunt](http://gruntjs.com/) task.
 
 
